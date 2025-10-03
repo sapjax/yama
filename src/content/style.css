@@ -1,0 +1,12 @@
+@import '../assets/global.css';
+/**
+ * Shadow DOM CSS Reset
+ *
+ * We use `all: initial` on the :host to prevent any inheritable styles from the host page
+ * from leaking into the shadow DOM. This creates a strong encapsulation boundary.
+ */
+:host {
+  all: initial;
+  font-family: var(--default-font-family);
+}
+
