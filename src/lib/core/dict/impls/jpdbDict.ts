@@ -37,8 +37,12 @@ const parseDocument = async (word: string, html: string) => {
           note,
         }
       },
-
     )
+
+    const audioUrls = root.querySelector('.vocabulary-audio')
+      ?.getAttribute('data-audio')?.split(',')
+      .map(url => 'https://jpdb.io/static/v/' + url)
+
     const altSpellings = [...root.querySelectorAll('.alt-spelling')].map((node) => {
       const spelling = node.querySelectorAll('ruby').map(n => n.outerHTML).join('')
       return {
@@ -53,6 +57,7 @@ const parseDocument = async (word: string, html: string) => {
         reading: reading ?? '',
         frequency,
         meanings,
+        audioUrls,
         altSpellings,
       }],
     } as DictionaryEntry

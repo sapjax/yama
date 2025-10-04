@@ -10,7 +10,7 @@ declare module 'webext-bridge' {
     [Messages.get_marked_words]: ProtocolWithReturn<{}, Record<string, Vocabulary>>
     [Messages.app_available]: { app_available: boolean }
     [Messages.lookup]: ProtocolWithReturn<{ word: string, dictName: DictName }, DictionaryEntry | null>
-    [Messages.playAudio]: { text: string, options?: chrome.tts.TtsOptions }
+    [Messages.playAudio]: { text: string, audioUrl?: string, options?: chrome.tts.TtsOptions }
     [Messages.jpdb_login]: ProtocolWithReturn<{ apiKey: string }, boolean>
     [Messages.jpdb_sync]: {}
     [Messages.jpdb_get_decks]: ProtocolWithReturn<{}, Deck[]>

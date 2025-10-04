@@ -7,7 +7,7 @@ export type DictionaryEntry = {
 type Definition = {
   spelling: string
   reading: string
-  audioUrl?: string
+  audioUrls?: string[]
   frequency?: string
   meanings: { explain: string, note?: string }[]
   altSpellings?: { spelling: string, percent?: string, furigana?: string }[]

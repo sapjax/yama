@@ -45,13 +45,20 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
                   </span>
                 )}
               </div>
-              <div
-                role="button"
-                onClick={() => playAudio(definition.spelling, definition.audioUrl)}
-                className="mt-1 px-2 text-muted-foreground hover:text-primary"
-              >
-                <Volume2 className="h-3 w-3" />
-              </div>
+              {
+                !!definition.audioUrls && definition.audioUrls.map((audioUrl, index) => {
+                  return (
+                    <div
+                      key={index}
+                      role="button"
+                      onClick={() => playAudio(definition.spelling, audioUrl)}
+                      className="mt-1 px-2 text-muted-foreground hover:text-primary"
+                    >
+                      <Volume2 className="h-3 w-3" />
+                    </div>
+                  )
+                })
+              }
 
               {/* Tags */}
               <div className="ml-auto flex flex-wrap gap-1">
@@ -222,12 +229,7 @@ async function lookup(word: string, dictName: DictName) {
 }
 
 const playAudio = (text: string, audioUrl?: string) => {
-  if (audioUrl) {
-    const audio = new Audio(audioUrl)
-    audio.play().catch(console.error)
-  } else {
-    sendMessage(Messages.playAudio, { text }, 'background')
-  }
+  sendMessage(Messages.playAudio, { text, audioUrl }, 'background')
 }
 
 const getJLPTColor = (level?: string) => {

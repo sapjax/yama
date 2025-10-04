@@ -22,6 +22,7 @@ export default defineManifest({
     'tts',
     'scripting',
     'activeTab',
+    'offscreen',
     'contentSettings',
   ],
   options_page: 'src/options/index.html',

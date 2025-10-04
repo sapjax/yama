@@ -4,6 +4,7 @@ import { onMessage } from 'webext-bridge/background'
 import { services } from '@/background/services'
 import { getSettings, updateSettings } from '@/lib/settings'
 import { getWhitelist, isDomainWhitelisted, removeFromWhitelist, addToWhitelist } from '@/lib/whitelist'
+import { playAudio } from '@/background/audio'
 // @ts-ignore
 import contentScriptPath from '@/content/main?script'
 
@@ -121,15 +122,7 @@ onMessage(Messages.lookup, async ({ data }) => {
 })
 
 onMessage(Messages.playAudio, async ({ data }) => {
-  const voices = await chrome.tts.getVoices()
-  const googleVoice = voices.find(v => v.voiceName === 'Google 日本語')?.voiceName
-  const options = { lang: 'ja-JP', rate: 0.9, voiceName: googleVoice }
-
-  chrome.tts.speak(data.text, options, () => {
-    if (chrome.runtime.lastError) {
-      console.error(chrome.runtime.lastError.message)
-    }
-  })
+  playAudio(data.audioUrl, data.text)
 })
 
 onMessage(Messages.jpdb_login, async ({ data }) => {
