@@ -121,8 +121,11 @@ onMessage(Messages.lookup, async ({ data }) => {
 })
 
 onMessage(Messages.playAudio, async ({ data }) => {
-  const { text, options = { lang: 'ja-JP' } } = data
-  chrome.tts.speak(text, options, () => {
+  const voices = await chrome.tts.getVoices()
+  const googleVoice = voices.find(v => v.voiceName === 'Google 日本語')?.voiceName
+  const options = { lang: 'ja-JP', rate: 0.9, voiceName: googleVoice }
+
+  chrome.tts.speak(data.text, options, () => {
     if (chrome.runtime.lastError) {
       console.error(chrome.runtime.lastError.message)
     }
