@@ -139,7 +139,9 @@ class JpdbSynchronizer implements Synchronizer {
     let wordWithIds = { ...word }
 
     if (!wordWithIds.vid || !wordWithIds.sid) {
-      const parsed = await this.client.parse([word.spelling])
+      // add space to avoid jpdb don't parse single char particles or copulas like の, て...
+      const text = word.spelling.length > 1 ? word.spelling : word.spelling + ' '
+      const parsed = await this.client.parse([text])
       if (!parsed.length || !parsed[0].length) {
         throw new Error(`Could not parse word: ${word.spelling}`)
       }
