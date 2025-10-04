@@ -11,7 +11,7 @@ class Highlighter {
   private markedWords: MarkedWordsMap = new Map()
   private highlights = new Map<ColorKey, Highlight>()
   private wordToBaseFormMap = new Map<string, string>()
-  private highlightContainerMap = new WeakMap<Node, Map<ColorKey, Set<Range>>>()
+  private highlightContainerMap = new WeakMap<Node, Set<Range>>()
   private listeners = new Set<() => void>()
 
   private segmentIntersectionObserver: IntersectionObserver
@@ -105,11 +105,8 @@ class Highlighter {
         range.setStart(node, segment.startIndex)
         range.setEnd(node, segment.endIndex)
 
-        const baseFrom = segment.baseForm
-        const colorKey = this.getColorKey(baseFrom)
-
         this.wordToBaseFormMap.set(range.toString(), segment.baseForm)
-        this.cacheNodeRanges(pNode, colorKey, range)
+        this.cacheNodeRanges(pNode, range)
       }
     }
   }
@@ -165,38 +162,32 @@ class Highlighter {
         range.setStart(startPos.node, startPos.localOffset)
         range.setEnd(endPos.node, endPos.localOffset)
 
-        const baseFrom = segment.baseForm
-        const colorKey = this.getColorKey(baseFrom)
         this.wordToBaseFormMap.set(range.toString(), segment.baseForm)
-        this.cacheNodeRanges(node, colorKey, range)
+        this.cacheNodeRanges(node, range)
       }
     }
   }
 
-  cacheNodeRanges(node: Node, colorKey: ColorKey, range: Range) {
-    let rangesMap = this.highlightContainerMap.get(node) ?? new Map<ColorKey, Set<Range>>()
-    this.highlightContainerMap.set(node, rangesMap)
-    const rangeSet = rangesMap.get(colorKey) ?? new Set()
-    rangeSet.add(range)
-    rangesMap.set(colorKey, rangeSet)
+  cacheNodeRanges(node: Node, range: Range) {
+    let rangesSet = this.highlightContainerMap.get(node) ?? new Set<Range>()
+    this.highlightContainerMap.set(node, rangesSet)
+    rangesSet.add(range)
   }
 
   paintNodeRanges(node: Node) {
-    const rangesMap = this.highlightContainerMap.get(node) ?? new Map<ColorKey, Set<Range>>()
-    for (const [colorKey, rangeSet] of rangesMap) {
-      for (const range of rangeSet) {
-        this.highlights.get(colorKey)?.add(range)
-      }
+    let rangesSet = this.highlightContainerMap.get(node) ?? new Set<Range>()
+    for (const range of rangesSet) {
+      const colorKey = this.getColorKey(this.getBaseFormByRange(range) ?? '')
+      this.highlights.get(colorKey)?.add(range)
     }
   }
 
   clearNodeRanges(node: Node, detach = false) {
-    const rangesMap = this.highlightContainerMap.get(node) ?? new Map<ColorKey, Set<Range>>()
-    for (const [colorKey, rangeSet] of rangesMap) {
-      for (const range of rangeSet) {
-        this.highlights.get(colorKey)?.delete(range)
-        detach && this.detachRange(range)
-      }
+    let rangesSet = this.highlightContainerMap.get(node) ?? new Set<Range>()
+    for (const range of rangesSet) {
+      const colorKey = this.getColorKey(this.getBaseFormByRange(range) ?? '')
+      this.highlights.get(colorKey)?.delete(range)
+      detach && this.detachRange(range)
     }
   }
 
@@ -211,9 +202,7 @@ class Highlighter {
 
   getRangeAtPoint(e: MouseEvent) {
     const element = e.target as HTMLElement
-    const nodeRangeMap = this.highlightContainerMap.get(element) ?? new Map()
-    const rangeSets = [...nodeRangeMap.values()].flat()
-    const ranges = rangeSets.flatMap(set => Array.from(set)) as Range[]
+    const ranges = [...this.highlightContainerMap.get(element) ?? new Set()]
 
     for (const range of ranges) {
       const rect = range.getBoundingClientRect()
