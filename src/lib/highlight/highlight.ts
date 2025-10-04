@@ -29,7 +29,7 @@ class Highlighter {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             const node = entry.target
-            this.highlight(node)
+            this.highlightNode(node)
             this.segmentIntersectionObserver.unobserve(node)
           }
         }
@@ -60,68 +60,71 @@ class Highlighter {
     }
   }
 
-  scheduleHighlight(node: Node) {
+  scheduleNodeHighlight(node: Node) {
     const textNodes = getTextNodes(node)
-    for (const node of textNodes) {
-      this.addToIntersectionObserver(node)
+    for (const textNode of textNodes) {
+      this.addToSegmentIntersectionObserver(textNode)
     }
   }
 
-  async highlight(node: Node) {
-    // Optimization: Check if the complex path is needed.
-    // If no ruby tags are present, use a simpler, faster path.
-    const isElement = node.nodeType === Node.ELEMENT_NODE
-    const hasRuby = isElement && (node as Element).querySelector('ruby')
+  addToSegmentIntersectionObserver(node: CharacterData) {
+    if (node.parentElement) {
+      this.segmentIntersectionObserver.observe(node.parentElement)
+    }
+  }
 
-    if (hasRuby) {
-      await this.highlightComplex(node)
+  async highlightNode(node: Element) {
+    const promises = []
+
+    if (node.tagName === 'RUBY') {
+      promises.push(this.highlightRubyNode(node))
     } else {
-      await this.highlightSimple(node)
-    }
-  }
-
-  private async highlightSimple(container: Node) {
-    const textNodes = getTextNodes(container)
-    const containersToObserve = new Set<Node>()
-
-    for (const node of textNodes) {
-      const text = node.nodeValue || ''
-      if (!text.trim()) continue
-      if (!/[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}ー]+/u.test(text)) continue
-
-      const segments = await this.segmentFn(text)
-
-      const pNode = node.parentElement
-      if (!pNode) continue
-
-      for (const segment of segments) {
-        if (segment.isWordLike) {
-          const range = new Range()
-          range.setStart(node, segment.startIndex)
-          range.setEnd(node, segment.endIndex)
-
-          const baseFrom = segment.baseForm
-          const colorKey = this.getColorKey(baseFrom)
-
-          this.wordToBaseFormMap.set(segment.surfaceForm, segment.baseForm)
-          this.cacheNodeRanges(pNode, colorKey, range)
+      for (const child of node.childNodes) {
+        if (child.nodeType === Node.TEXT_NODE) {
+          promises.push(this.highlightTextNode(child as CharacterData))
         }
       }
-      containersToObserve.add(pNode)
     }
+    await Promise.allSettled(promises)
+    this.paintIntersectionObserver.observe(node)
+  }
 
-    for (const container of containersToObserve) {
-      this.paintIntersectionObserver.observe(container as Element)
+  private async highlightTextNode(node: CharacterData) {
+    const text = node.nodeValue || ''
+    if (!text.trim()) return
+    if (!/[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}ー]+/u.test(text)) return
+
+    const segments = await this.segmentFn(text)
+
+    const pNode = node.parentElement
+    if (!pNode) return
+
+    for (const segment of segments) {
+      if (segment.isWordLike) {
+        const range = new Range()
+        range.setStart(node, segment.startIndex)
+        range.setEnd(node, segment.endIndex)
+
+        const baseFrom = segment.baseForm
+        const colorKey = this.getColorKey(baseFrom)
+
+        this.wordToBaseFormMap.set(range.toString(), segment.baseForm)
+        this.cacheNodeRanges(pNode, colorKey, range)
+      }
     }
   }
 
-  private async highlightComplex(node: Node) {
+  /**
+   *  example:
+   *    <ruby>迷<rt>めい</rt>惑<rt>わく</rt></ruby>
+   */
+  private async highlightRubyNode(node: Element) {
     const textNodes = getTextNodes(node)
     if (textNodes.length === 0) {
       return
     }
 
-    const textContent = textNodes.map(n => n.nodeValue ?? '').join('')
+    const textContent = textNodes.map(n => n.nodeValue?.trim() ?? '').join('')
     if (!textContent.trim()) return
     if (!/[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}ー]+/u.test(textContent)) return
 
@@ -149,57 +152,24 @@ class Highlighter {
       }
     }
 
-    const sentences: string[] = textContent.match(/[^.!?。]+[.!?。]?/g) || []
-    if (sentences.length === 0 && textContent.length > 0) {
-      sentences.push(textContent)
-    }
+    const segments = await this.segmentFn(textContent)
 
-    let sentenceStartOffset = 0
-    const containersToObserve = new Set<Node>()
+    for (const segment of segments) {
+      if (segment.isWordLike) {
+        const startPos = findNodeForCharIndex(segment.startIndex)
+        const endPos = findNodeForCharIndex(segment.endIndex)
 
-    for (const sentence of sentences) {
-      const segments = await this.segmentFn(sentence)
+        if (!startPos || !endPos) continue
 
-      for (const segment of segments) {
-        if (segment.isWordLike) {
-          const globalStartIndex = sentenceStartOffset + segment.startIndex
-          const globalEndIndex = sentenceStartOffset + segment.endIndex
+        const range = new Range()
+        range.setStart(startPos.node, startPos.localOffset)
+        range.setEnd(endPos.node, endPos.localOffset)
 
-          const startPos = findNodeForCharIndex(globalStartIndex)
-          const endPos = findNodeForCharIndex(globalEndIndex)
-
-          if (!startPos || !endPos) continue
-
-          const range = new Range()
-          range.setStart(startPos.node, startPos.localOffset)
-          range.setEnd(endPos.node, endPos.localOffset)
-
-          const baseFrom = segment.baseForm
-          const colorKey = this.getColorKey(baseFrom)
-
-          this.wordToBaseFormMap.set(segment.surfaceForm, segment.baseForm)
-
-          const pNode = range.commonAncestorContainer
-          const container = pNode.nodeType === Node.ELEMENT_NODE ? pNode : pNode.parentElement
-
-          if (container) {
-            this.cacheNodeRanges(container, colorKey, range)
-            containersToObserve.add(container)
-          }
-        }
+        const baseFrom = segment.baseForm
+        const colorKey = this.getColorKey(baseFrom)
+        this.wordToBaseFormMap.set(range.toString(), segment.baseForm)
+        this.cacheNodeRanges(node, colorKey, range)
       }
-
-      sentenceStartOffset += sentence.length
-    }
-
-    for (const container of containersToObserve) {
-      this.paintIntersectionObserver.observe(container as Element)
-    }
-  }
-
-  addToIntersectionObserver(node: CharacterData) {
-    if (node.parentElement) {
-      this.segmentIntersectionObserver.observe(node.parentElement)
     }
   }
 
@@ -270,7 +240,7 @@ class Highlighter {
         if (mutation.type === 'characterData') {
           if (mutation.target.nodeType === Node.TEXT_NODE) {
             if (isTextNodeValid(mutation.target as Text)) {
-              this.addToIntersectionObserver(mutation.target as Text)
+              this.addToSegmentIntersectionObserver(mutation.target as Text)
             }
           }
         }
@@ -281,7 +251,7 @@ class Highlighter {
             }
             if (node.nodeType === Node.TEXT_NODE) {
               if (isTextNodeValid(node as Text) && node.nodeValue) {
-                this.addToIntersectionObserver(node as Text)
+                this.addToSegmentIntersectionObserver(node as Text)
               }
             } else {
               if (
@@ -290,7 +260,7 @@ class Highlighter {
               ) {
                 return false
               }
-              this.scheduleHighlight(node)
+              this.scheduleNodeHighlight(node)
             }
           })
 
@@ -396,9 +366,10 @@ function getTextNodes(node: Node): Text[] {
   const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT)
 
   while (walker.nextNode()) {
-    !invalidTags.includes(walker.currentNode.parentElement?.tagName ?? '') && textNodes.push(walker.currentNode as Text)
+    if (!invalidTags.includes(walker.currentNode.parentElement?.tagName ?? '')) {
+      textNodes.push(walker.currentNode as Text)
+    }
   }
-
   return textNodes
 }
 
@@ -413,7 +384,7 @@ async function initHighlighter() {
   }
   const markedWords = await sendMessage(Messages.get_marked_words, {}, 'background')
   const highlighter = new Highlighter(segmentFn, new Map(Object.entries(markedWords)))
-  highlighter.scheduleHighlight(document.body)
+  highlighter.scheduleNodeHighlight(document.body)
   highlighter.observeDomChange()
   highlighter.listenBackgroundMessage()
   return highlighter

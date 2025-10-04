@@ -16,7 +16,5 @@ const appContainer = document.createElement('div')
 shadow.appendChild(appContainer)
 
 createRoot(appContainer).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+  <App />,
 )

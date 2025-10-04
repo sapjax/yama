@@ -21,4 +21,5 @@ export const invalidTags = [
   'OBJECT',
   'YAMA-ROOT',
   'RT',
+  'RP',
 ]
