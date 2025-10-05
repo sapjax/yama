@@ -45,6 +45,12 @@ export interface AppSettings {
     model: string
     prompt: string
   }
+  shortcuts: {
+    tracking: string
+    never_forget: string
+    ignored: string
+    ai_explain: string
+  }
 }
 
 export const defaultSettings: AppSettings = {
@@ -60,6 +66,12 @@ export const defaultSettings: AppSettings = {
     endpoint: 'https://api.openai.com/v1/chat/completions',
     model: '',
     prompt: 'explain the grammar of this sentence:『 ${context}』and the meaning of the word:『 ${word}』in English.',
+  },
+  shortcuts: {
+    tracking: 's',
+    never_forget: 'd',
+    ignored: 'a',
+    ai_explain: 'w',
   },
 }
 

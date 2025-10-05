@@ -1,14 +1,22 @@
 import { Messages } from '@/lib/message'
 import { getSentenceFromRange, cn } from '@/lib/utils'
 import { Bot } from 'lucide-react'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useImperativeHandle, Ref } from 'react'
 import { sendMessage, onMessage } from 'webext-bridge/content-script'
 import markdownStyle from '../../assets/markdown.css?inline'
 import Markdown from 'markdown-to-jsx'
 
-export function AiExplain({ word, range }: { word: string, range: Range | null }) {
+export type AiExplainHandler = {
+  handleExplain: () => void
+}
+
+export function AiExplain({ word, range, ref }: { word: string, range: Range | null, ref?: Ref<AiExplainHandler> }) {
   const [explanation, setExplanation] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useImperativeHandle(ref, () => ({
+    handleExplain,
+  }))
 
   useEffect(() => {
     setExplanation('')
@@ -16,12 +24,12 @@ export function AiExplain({ word, range }: { word: string, range: Range | null }
   }, [word])
 
   const handleExplain = useCallback(async () => {
-    if (!range) return
+    if (!range || loading) return
     setLoading(true)
     setExplanation('')
     const sentence = getSentenceFromRange(range)!
     sendMessage(Messages.ai_explain_stream_start, { sentence, word }, 'background')
-  }, [range, word])
+  }, [range, word, loading])
 
   useEffect(() => {
     const chunkSub = onMessage(Messages.ai_explain_stream_chunk, ({ data }) => {

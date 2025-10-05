@@ -5,7 +5,7 @@ import { AppSettings, getSettings } from '@/lib/settings'
 import Dict from './components/Dict'
 import Toolbar from './components/Toolbar'
 import Panel, { PanelHandler } from './components/Panel'
-import { AiExplain } from './components/AiExplain'
+import { AiExplain, AiExplainHandler } from './components/AiExplain'
 import { DictName } from '@/lib/core/dict'
 
 function App() {
@@ -16,6 +16,7 @@ function App() {
   const [deferredWord] = useDebounce(curWord, 300, { leading: true, trailing: true })
   const dictNames = settings?.dicts.filter(d => d.enabled).map(d => d.id as DictName) ?? []
   const panelRef = useRef<PanelHandler>(null)
+  const aiExplainRef = useRef<AiExplainHandler>(null)
 
   useEffect(() => {
     initHighlighter().then(
@@ -36,6 +37,7 @@ function App() {
         chrome.storage.onChanged.addListener((changes, area) => {
           if (area === 'sync' && changes.settings) {
             const newSettings = changes.settings.newValue
+            setSettings(newSettings)
             style.textContent = genMarkStyles(
               { ...newSettings.colors, ...newSettings.reviewColors },
               newSettings.markStyle,
@@ -45,6 +47,46 @@ function App() {
       },
     )
   }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!curWord) return
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+
+      const shortcuts = settings?.shortcuts
+      if (!shortcuts) return
+
+      let matched = false
+      switch (e.key) {
+        case shortcuts.tracking:
+          highlightRef.current?.markWord(curWord, 'Tracking', curRange)
+          matched = true
+          break
+        case shortcuts.ignored:
+          highlightRef.current?.markWord(curWord, 'Ignored', curRange)
+          matched = true
+          break
+        case shortcuts.never_forget:
+          highlightRef.current?.markWord(curWord, 'Never_Forget', curRange)
+          matched = true
+          break
+        case shortcuts.ai_explain:
+          aiExplainRef.current?.handleExplain()
+          matched = true
+          break
+      }
+
+      if (matched) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [curWord, curRange, settings])
 
   const onStayEnough = useCallback(() => {
     if (highlightRef.current?.getColorKey(curWord) === 'UnSeen') {
@@ -93,7 +135,7 @@ function App() {
             maxHeight: 'min(400px, var(--available-height))',
           }}
         >
-          {!!settings?.ai && <AiExplain word={curWord} range={curRange} />}
+          {!!settings?.ai && <AiExplain word={curWord} range={curRange} ref={aiExplainRef} />}
           {!!curWord && dictNames.map(dictName =>
             <Dict key={dictName} word={deferredWord} dictName={dictName} />,
           )}

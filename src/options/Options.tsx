@@ -4,6 +4,7 @@ import { AiSettings } from './components/AiSettings'
 import { ColorSettings } from './components/ColorSettings'
 import { DictSettings } from './components/DictSettings'
 import { JpdbSettings } from './components/JpdbSettings'
+import { ShortcutSettings } from './components/ShortcutSettings'
 import { cn } from '@/lib/utils'
 
 const tabs = {
@@ -22,6 +23,10 @@ const tabs = {
   ai: {
     label: 'AI',
     component: <AiSettings />,
+  },
+  shortcuts: {
+    label: 'Shortcuts',
+    component: <ShortcutSettings />,
   },
 }
 
