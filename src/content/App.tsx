@@ -1,18 +1,20 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useDebounce } from 'use-debounce'
 import { Highlighter, genMarkStyles, initHighlighter } from '@/lib/highlight'
-import { getSettings } from '@/lib/settings'
-import { type DictName, dictAdapters } from '@/lib/core/dict'
+import { AppSettings, getSettings } from '@/lib/settings'
 import Dict from './components/Dict'
 import Toolbar from './components/Toolbar'
 import Panel, { PanelHandler } from './components/Panel'
+import { AiExplain } from './components/AiExplain'
+import { DictName } from '@/lib/core/dict'
 
 function App() {
   const [curWord, setCurWord] = useState('')
   const [curRange, setCurRange] = useState<Range | null>(null)
-  const [dictNames, setDictNames] = useState(Object.keys(dictAdapters) as DictName[])
+  const [settings, setSettings] = useState<AppSettings>()
   const highlightRef = useRef<Highlighter>(null)
   const [deferredWord] = useDebounce(curWord, 300, { leading: true, trailing: true })
+  const dictNames = settings?.dicts.filter(d => d.enabled).map(d => d.id as DictName) ?? []
   const panelRef = useRef<PanelHandler>(null)
 
   useEffect(() => {
@@ -21,6 +23,8 @@ function App() {
         highlightRef.current = highlighter
         // this styles should place outside the shadow dom
         const settings = await getSettings()
+        setSettings(settings)
+
         const style = document.createElement('style')
         style.id = 'yama-style'
         style.textContent = genMarkStyles(
@@ -38,11 +42,6 @@ function App() {
             )
           }
         })
-
-        const dictNames = settings.dicts
-          .filter(dict => dict.enabled)
-          .map(dict => dict.id)
-        setDictNames(dictNames as DictName[])
       },
     )
   }, [])
@@ -89,15 +88,15 @@ function App() {
           {highlightRef.current && <Toolbar word={curWord} highlighter={highlightRef.current} range={curRange} />}
         </div>
         <div
-          className="scrollbar-thin space-y-3 overflow-y-scroll p-3 pr-1.5"
+          className="scrollbar-thin relative overflow-y-scroll p-3 pr-1.5"
           style={{
             maxHeight: 'min(400px, var(--available-height))',
           }}
         >
+          {!!settings?.ai && <AiExplain word={curWord} range={curRange} />}
           {!!curWord && dictNames.map(dictName =>
             <Dict key={dictName} word={deferredWord} dictName={dictName} />,
           )}
-          {/* {!!curWord && <OutLinks word={curWord} />} */}
         </div>
       </>
     </Panel>

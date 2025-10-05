@@ -39,6 +39,12 @@ export interface AppSettings {
   jpdbMiningDeckId: number | null
   jpdbLastSync: number | null
   markStyle: string
+  ai: {
+    apiKey: string
+    endpoint: string
+    model: string
+    prompt: string
+  }
 }
 
 export const defaultSettings: AppSettings = {
@@ -49,6 +55,12 @@ export const defaultSettings: AppSettings = {
   jpdbMiningDeckId: null,
   jpdbLastSync: null,
   markStyle: 'background',
+  ai: {
+    apiKey: '',
+    endpoint: 'https://api.openai.com/v1/chat/completions',
+    model: '',
+    prompt: 'explain the grammar of this sentence:『 ${context}』and the meaning of the word:『 ${word}』in English.',
+  },
 }
 
 /**

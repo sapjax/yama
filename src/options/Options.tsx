@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { useEffect, useState } from 'react'
+import { AiSettings } from './components/AiSettings'
 import { ColorSettings } from './components/ColorSettings'
 import { DictSettings } from './components/DictSettings'
 import { JpdbSettings } from './components/JpdbSettings'
@@ -17,6 +18,10 @@ const tabs = {
   jpdb: {
     label: 'JPDB Sync',
     component: <JpdbSettings />,
+  },
+  ai: {
+    label: 'AI',
+    component: <AiSettings />,
   },
 }
 

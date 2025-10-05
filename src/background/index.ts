@@ -1,6 +1,6 @@
 import { Messages, sendMessageToAllTabs } from '@/lib/message'
 import { updateIconBadge } from '@/lib/utils'
-import { onMessage } from 'webext-bridge/background'
+import { onMessage, sendMessage } from 'webext-bridge/background'
 import { services } from '@/background/services'
 import { getSettings, updateSettings } from '@/lib/settings'
 import { getWhitelist, isDomainWhitelisted, removeFromWhitelist, addToWhitelist } from '@/lib/whitelist'
@@ -173,5 +173,44 @@ onMessage(Messages.toggle_whitelist_status, async ({ data }) => {
     await addToWhitelist(domain)
     // Inject the script immediately after whitelisting
     await injectScriptIntoTab(tabId)
+  }
+})
+
+let currentAiStreamController: AbortController | null = null
+
+onMessage(Messages.ai_explain_stream_start, async ({ data, sender }) => {
+  if (currentAiStreamController) {
+    currentAiStreamController.abort()
+  }
+  currentAiStreamController = new AbortController()
+
+  await services.ensureInitialized(services.aiService)
+  const { sentence, word } = data
+  const tabId = sender.tabId
+  if (!tabId) return
+
+  try {
+    await services.aiService.explain(
+      sentence,
+      word,
+      (chunk) => {
+        sendMessage(Messages.ai_explain_stream_chunk, { chunk }, { tabId, frameId: sender.frameId, context: 'content-script' })
+      },
+      currentAiStreamController.signal,
+    )
+  } catch (e: any) {
+    if (e.name !== 'AbortError') {
+      console.error(e)
+    }
+  } finally {
+    sendMessage(Messages.ai_explain_stream_end, {}, { tabId, frameId: sender.frameId, context: 'content-script' })
+    currentAiStreamController = null
+  }
+})
+
+onMessage(Messages.ai_explain_stream_cancel, () => {
+  if (currentAiStreamController) {
+    currentAiStreamController.abort()
+    currentAiStreamController = null
   }
 })

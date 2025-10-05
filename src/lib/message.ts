@@ -17,6 +17,11 @@ declare module 'webext-bridge' {
     [Messages.get_tab_whitelist_status]: ProtocolWithReturn<{ domain: string }, boolean>
     [Messages.toggle_whitelist_status]: { domain: string, tabId: number }
 
+    // AI streaming
+    [Messages.ai_explain_stream_start]: { sentence: string, word: string }
+    [Messages.ai_explain_stream_chunk]: { chunk: string }
+    [Messages.ai_explain_stream_end]: {}
+    [Messages.ai_explain_stream_cancel]: {}
   }
 }
 
@@ -37,6 +42,11 @@ enum Messages {
   jpdb_get_decks = 'jpdb_get_decks',
   get_tab_whitelist_status = 'get_tab_whitelist_status',
   toggle_whitelist_status = 'toggle_whitelist_status',
+
+  ai_explain_stream_start = 'ai_explain_stream_start',
+  ai_explain_stream_chunk = 'ai_explain_stream_chunk',
+  ai_explain_stream_end = 'ai_explain_stream_end',
+  ai_explain_stream_cancel = 'ai_explain_stream_cancel',
 }
 
 async function sendMessageToAllTabs<T extends Messages>(action: T, data: ProtocolMap[T]) {
