@@ -1,6 +1,5 @@
 /* Basic body styles */
 .markdown-body {
-	font-family: sans-serif;
 	line-height: 1.6;
 	color: var(--foreground);
 

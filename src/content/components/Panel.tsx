@@ -175,7 +175,7 @@ function Panel(props: PanelProps) {
   return (
     <div
       className={clsx(
-        'fixed top-0 left-0 isolate w-96 rounded-lg border-2 border-border bg-card text-card-foreground shadow-xl',
+        'fixed top-0 left-0 isolate z-[1000000000] w-96 rounded-lg border-2 border-border bg-card text-card-foreground shadow-xl',
       )}
       ref={refs.setFloating}
       inert={!isOpen}
