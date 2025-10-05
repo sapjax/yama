@@ -50,6 +50,7 @@ export interface AppSettings {
     never_forget: string
     ignored: string
     ai_explain: string
+    pronounce: string
   }
 }
 
@@ -72,6 +73,7 @@ export const defaultSettings: AppSettings = {
     never_forget: 'd',
     ignored: 'a',
     ai_explain: 'w',
+    pronounce: 'r',
   },
 }
 

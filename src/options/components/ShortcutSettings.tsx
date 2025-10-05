@@ -60,6 +60,7 @@ export function ShortcutSettings() {
         {renderShortcutInput('ignored', 'Mark as Ignored')}
         {renderShortcutInput('never_forget', 'Mark as Never Forget')}
         {renderShortcutInput('ai_explain', 'Trigger AI Explain')}
+        {renderShortcutInput('pronounce', 'Pronounce Word')}
       </div>
       <Button onClick={handleSave}>{saveState}</Button>
     </div>

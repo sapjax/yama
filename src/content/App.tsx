@@ -16,6 +16,7 @@ function App() {
   const [deferredWord] = useDebounce(curWord, 300, { leading: true, trailing: true })
   const dictNames = settings?.dicts.filter(d => d.enabled).map(d => d.id as DictName) ?? []
   const panelRef = useRef<PanelHandler>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const aiExplainRef = useRef<AiExplainHandler>(null)
 
   useEffect(() => {
@@ -72,6 +73,11 @@ function App() {
           break
         case shortcuts.ai_explain:
           aiExplainRef.current?.handleExplain()
+          matched = true
+          break
+        case shortcuts.pronounce:
+          const audioButton = containerRef.current?.querySelector('[data-pronounce]') as HTMLElement
+          audioButton?.click()
           matched = true
           break
       }
@@ -134,6 +140,7 @@ function App() {
           style={{
             maxHeight: 'min(400px, var(--available-height))',
           }}
+          ref={containerRef}
         >
           {!!settings?.ai && <AiExplain word={curWord} range={curRange} ref={aiExplainRef} />}
           {!!curWord && dictNames.map(dictName =>

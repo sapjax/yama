@@ -51,6 +51,7 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
                     <div
                       key={index}
                       role="button"
+                      data-pronounce
                       onClick={() => playAudio(definition.spelling, audioUrl)}
                       className="mt-1 px-2 text-muted-foreground hover:text-primary"
                     >
