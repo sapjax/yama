@@ -1,8 +1,10 @@
 import { Messages } from '@/lib/message'
-import { getSentenceFromRange } from '@/lib/utils'
+import { getSentenceFromRange, cn } from '@/lib/utils'
 import { Bot } from 'lucide-react'
 import { useEffect, useState, useCallback } from 'react'
 import { sendMessage, onMessage } from 'webext-bridge/content-script'
+import markdownStyle from '../../assets/markdown.css?inline'
+import Markdown from 'markdown-to-jsx'
 
 export function AiExplain({ word, range }: { word: string, range: Range | null }) {
   const [explanation, setExplanation] = useState('')
@@ -37,13 +39,18 @@ export function AiExplain({ word, range }: { word: string, range: Range | null }
 
   if (!word) return null
 
-  const html = explanation.replaceAll('\n', '<br />')
-
   return (
     <>
       {!explanation && (
         <div className="absolute top-[6px] right-0.5 cursor-pointer p-2" role="button">
-          <Bot strokeWidth={2} className="size-4 rounded-sm text-foreground" onClick={handleExplain} />
+          <Bot
+            strokeWidth={2}
+            className={cn(
+              'size-4 rounded-sm text-foreground',
+              loading ? 'animate-spin' : '',
+            )}
+            onClick={handleExplain}
+          />
         </div>
       )}
       {explanation && (
@@ -56,11 +63,18 @@ export function AiExplain({ word, range }: { word: string, range: Range | null }
               AI Explain
             </span>
           </div>
-          {html && (
-            <div className="space-y-2 rounded-md border border-border bg-muted p-2.5 text-xs text-card-foreground" dangerouslySetInnerHTML={{ __html: html }} />
+          {explanation && (
+            <div className="space-y-2 rounded-md border border-border bg-muted p-2.5 text-xs text-card-foreground">
+              <div className="markdown-body">
+                <Markdown options={{ forceBlock: true, enforceAtxHeadings: true }}>
+                  {explanation}
+                </Markdown>
+              </div>
+            </div>
           )}
         </div>
       )}
+      <style>{markdownStyle}</style>
     </>
   )
 }

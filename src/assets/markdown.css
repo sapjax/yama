@@ -1,0 +1,106 @@
+/* Basic body styles */
+.markdown-body {
+	font-family: sans-serif;
+	line-height: 1.6;
+	color: var(--foreground);
+
+	/* Headings */
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		margin-top: 1.5em;
+		margin-bottom: 0.5em;
+		font-weight: bold;
+	}
+
+	h1 {
+		font-size: 2em;
+	}
+
+	h2 {
+		font-size: 1.75em;
+	}
+
+	h3 {
+		font-size: 1.5em;
+	}
+
+	h4 {
+		font-size: 1.25em;
+	}
+
+	/* Paragraphs */
+	p {
+		margin-bottom: 1em;
+	}
+
+	/* Links */
+	a {
+		color: #007bff;
+		text-decoration: none;
+	}
+
+	a:hover {
+		text-decoration: underline;
+	}
+
+	/* Lists */
+	ul,
+	ol {
+		margin-bottom: 1em;
+		padding-left: 20px;
+	}
+
+	/* Code blocks and inline code */
+	pre {
+		background-color: var(--input);
+		padding: 10px;
+		border-radius: 4px;
+		overflow-x: auto;
+	}
+
+	code {
+		font-family: monospace;
+		background-color: var(--secondary);
+		padding: 2px 4px;
+		border-radius: 3px;
+	}
+
+	/* Blockquotes */
+	blockquote {
+		border-left: 4px solid var(--border);
+		padding-left: 15px;
+		color: var(--muted-foreground);
+		margin: 1em 0;
+	}
+
+	/* Tables */
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-bottom: 1em;
+	}
+
+	th,
+	td {
+		border: 1px solid var(--foreground);
+		padding: 8px;
+		text-align: left;
+		color: var(--foreground);
+		font-size: 12px;
+	}
+
+	th {
+		background-color: var(--accent);
+	}
+
+	/* Horizontal Rule */
+	hr {
+		border: 0;
+		border-top: 1px solid var(--sidebar-border);
+		margin: 2em 0;
+	}
+}
