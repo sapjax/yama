@@ -29,7 +29,7 @@ const parseDocument = async (word: string, html: string) => {
     const meanings = [...root.querySelectorAll('.description')].map(
       (node) => {
         const noteNode = node.querySelector('div')
-        const note = noteNode?.textContent
+        const note = noteNode?.textContent?.replace(/^\d+./, '').replaceAll('&#39;', '\'').replaceAll('&quot;', '\"')
         noteNode?.remove()
         const explain = node.textContent?.replace(/^\d+./, '').replaceAll('&#39;', '\'').replaceAll('&quot;', '\"')
         return {

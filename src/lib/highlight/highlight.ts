@@ -60,24 +60,30 @@ class Highlighter {
     }
   }
 
-  scheduleNodeHighlight(node: Node) {
+  public scheduleNodeHighlight(node: Node) {
     const textNodes = getTextNodes(node)
     for (const textNode of textNodes) {
       this.addToSegmentIntersectionObserver(textNode)
     }
   }
 
-  addToSegmentIntersectionObserver(node: CharacterData) {
+  private addToSegmentIntersectionObserver(node: CharacterData) {
     if (node.parentElement) {
-      this.segmentIntersectionObserver.observe(node.parentElement)
+      // if ruby tag, expand to ruby's parent element
+      if (node.parentElement.tagName === 'RUBY' && node.parentElement.parentElement) {
+        this.segmentIntersectionObserver.observe(node.parentElement.parentElement)
+      } else {
+        this.segmentIntersectionObserver.observe(node.parentElement)
+      }
     }
   }
 
-  async highlightNode(node: Element) {
+  private async highlightNode(node: Element) {
     const promises = []
 
-    if (node.tagName === 'RUBY') {
-      promises.push(this.highlightRubyNode(node))
+    const hasRuby = !![...node.children].find(child => child.tagName === 'RUBY')
+    if (hasRuby) {
+      promises.push(this.highlightRubyParentNode(node))
     } else {
       for (const child of node.childNodes) {
         if (child.nodeType === Node.TEXT_NODE) {
@@ -113,54 +119,91 @@ class Highlighter {
 
   /**
    *  example:
-   *    <ruby>迷<rt>めい</rt>惑<rt>わく</rt></ruby>
+   *    <ruby>迷<rt>めい</rt> 惑<rt>わく</rt></ruby>
+   *      which is segmented as [迷惑]
+   *    or
+   *    <ruby>向<rt class="kanji">む</rt></ruby>こうに
+   *      which is segmented as [向こう, に]
+   *
+   *  These situation is a little bit of tricky, draw as:
+   *    text nodes: ======  ====== =========== ==== ====
+   *    segments:   ########## ###   #####   ######
+   *
    */
-  private async highlightRubyNode(node: Element) {
-    const textNodes = getTextNodes(node)
+  private async highlightRubyParentNode(node: Element) {
+    let textNodes = getTextNodes(node)
     if (textNodes.length === 0) {
       return
     }
-
     const textContent = textNodes.map(n => n.nodeValue?.trim() ?? '').join('')
     if (!textContent.trim()) return
     if (!/[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}ー]+/u.test(textContent)) return
 
-    let textOffset = 0
-    const nodeOffsets = textNodes.map((node) => {
-      const start = textOffset
-      textOffset += node.nodeValue?.trim().length ?? 0
-      return { node, start, end: textOffset }
-    })
+    // same as trim
+    const isWhitespace = (char: string) => {
+      return /[\s\uFEFF\xA0]/.test(char)
+    }
 
-    const findNodeForCharIndex = (index: number) => {
-      if (index === textContent.length) {
-        const lastNodeInfo = nodeOffsets[nodeOffsets.length - 1]
-        return {
-          node: lastNodeInfo.node,
-          localOffset: lastNodeInfo.node.length,
+    const findNodeForCharIndex = (segment: SegmentedToken) => {
+      let matchedText = ''
+      let startNode = null
+      let endNode = null
+      let startPos = -1
+      let endPos = -1
+
+      for (let i = 0; i < textNodes.length; i++) {
+        const node = textNodes[i]
+        const nodeText = node.nodeValue ?? ''
+        for (let j = 0; j < nodeText.length; j++) {
+          const char = nodeText[j]
+          if (isWhitespace(char)) {
+            continue
+          }
+
+          if (matchedText) {
+            // mismatch, reset the matched state
+            const textToMatch = matchedText + char
+            if (!segment.surfaceForm.startsWith(textToMatch)) {
+              matchedText = ''
+              startNode = null
+              startPos = -1
+              continue
+            } else {
+              matchedText = textToMatch
+            }
+          } else {
+            // matched the first char
+            if (char === segment.surfaceForm[0]) {
+              matchedText = char
+              startNode = node
+              startPos = j
+            }
+          }
+
+          if (matchedText === segment.surfaceForm) {
+            endNode = node
+            endPos = j + 1 // + 1 to include the end char
+            textNodes = textNodes.slice(i)
+            return { startNode, startPos, endNode, endPos }
+            // mismatch, reset the matched state
+          }
         }
       }
-      const nodeInfo = nodeOffsets.find(info => index >= info.start && index < info.end)
-      if (!nodeInfo) return null
-
-      return {
-        node: nodeInfo.node,
-        localOffset: index - nodeInfo.start,
-      }
+      return { startNode, startPos, endNode, endPos }
     }
 
     const segments = await this.segmentFn(textContent)
 
     for (const segment of segments) {
       if (segment.isWordLike) {
-        const startPos = findNodeForCharIndex(segment.startIndex)
-        const endPos = findNodeForCharIndex(segment.endIndex)
-
-        if (!startPos || !endPos) continue
+        const { startNode, startPos, endNode, endPos } = findNodeForCharIndex(segment)
+        if (!startNode || startPos < 0 || !endNode || endPos < 0) {
+          continue
+        }
 
         const range = new Range()
-        range.setStart(startPos.node, startPos.localOffset)
-        range.setEnd(endPos.node, endPos.localOffset)
+        range.setStart(startNode, startPos)
+        range.setEnd(endNode, endPos)
 
         this.wordToBaseFormMap.set(range.toString(), segment.baseForm)
         this.cacheNodeRanges(node, range)
@@ -168,13 +211,13 @@ class Highlighter {
     }
   }
 
-  cacheNodeRanges(node: Node, range: Range) {
+  private cacheNodeRanges(node: Node, range: Range) {
     let rangesSet = this.highlightContainerMap.get(node) ?? new Set<Range>()
     this.highlightContainerMap.set(node, rangesSet)
     rangesSet.add(range)
   }
 
-  paintNodeRanges(node: Node) {
+  private paintNodeRanges(node: Node) {
     let rangesSet = this.highlightContainerMap.get(node) ?? new Set<Range>()
     for (const range of rangesSet) {
       const colorKey = this.getColorKey(this.getBaseFormByRange(range) ?? '')
@@ -182,7 +225,7 @@ class Highlighter {
     }
   }
 
-  clearNodeRanges(node: Node, detach = false) {
+  private clearNodeRanges(node: Node, detach = false) {
     let rangesSet = this.highlightContainerMap.get(node) ?? new Set<Range>()
     for (const range of rangesSet) {
       const colorKey = this.getColorKey(this.getBaseFormByRange(range) ?? '')
@@ -191,22 +234,26 @@ class Highlighter {
     }
   }
 
-  detachRange(range: Range) {
+  private detachRange(range: Range) {
     this.wordToBaseFormMap.delete(range.toString())
     range.detach()
   }
 
-  getBaseFormByRange(range: Range) {
+  public getBaseFormByRange(range: Range) {
     return this.wordToBaseFormMap.get(range.toString())
   }
 
-  getRangeAtPoint(e: MouseEvent) {
+  public getRangeAtPoint(e: MouseEvent) {
     let element = e.target as HTMLElement
     if (element.tagName === 'RT') {
       element = element.parentElement as HTMLElement
     }
 
-    const ranges = [...this.highlightContainerMap.get(element) ?? new Set()]
+    const rangeSet = this.highlightContainerMap.get(element)
+      ?? this.highlightContainerMap.get(element.parentElement ?? document.body)
+      ?? new Set()
+
+    const ranges = [...rangeSet]
 
     for (const range of ranges) {
       const rect = range.getBoundingClientRect()
@@ -227,7 +274,7 @@ class Highlighter {
     }
   }
 
-  observeDomChange() {
+  public observeDomChange() {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'characterData') {
@@ -293,7 +340,7 @@ class Highlighter {
     })
   }
 
-  listenBackgroundMessage() {
+  public listenBackgroundMessage() {
     chrome.runtime.onMessage.addListener((msg) => {
       const { action } = msg
       switch (action) {
@@ -307,11 +354,11 @@ class Highlighter {
     })
   }
 
-  getWordStatus(spelling: string) {
+  public getWordStatus(spelling: string) {
     return this.markedWords.get(spelling)?.status ?? 'UnSeen'
   }
 
-  getColorKey(spelling: string) {
+  public getColorKey(spelling: string) {
     const word = this.markedWords.get(spelling)
     if (!word) {
       return 'UnSeen'
@@ -327,7 +374,7 @@ class Highlighter {
     return this.getWordStatus(spelling)
   }
 
-  async markWord(spelling: string, status: WordStatus, range: Range | null) {
+  public async markWord(spelling: string, status: WordStatus, range: Range | null) {
     const existingWord = this.markedWords.get(spelling) ?? {}
     this.markedWords.set(spelling, { ...existingWord, status, spelling })
     this.notify()
@@ -335,7 +382,7 @@ class Highlighter {
     await sendMessage(Messages.mark_word, { spelling, status, sentence }, 'background')
   }
 
-  handleMarkWordResponse(spelling: string, newStatus: WordStatus) {
+  private handleMarkWordResponse(spelling: string, newStatus: WordStatus) {
     const existingWord = this.markedWords.get(spelling) ?? {}
     this.markedWords.set(spelling, { ...existingWord, status: newStatus, spelling })
     const newColorKey = this.getColorKey(spelling)
