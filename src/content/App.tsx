@@ -57,6 +57,8 @@ function App() {
       const shortcuts = settings?.shortcuts
       if (!shortcuts) return
 
+      if (!panelRef.current?.isOpen()) return
+
       let matched = false
       switch (e.key) {
         case shortcuts.tracking:

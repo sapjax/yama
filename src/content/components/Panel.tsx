@@ -4,6 +4,7 @@ import clsx from 'clsx'
 
 export type PanelHandler = {
   setTrigger: (trigger: VirtualElement | null) => void
+  isOpen: () => boolean
 }
 
 type PanelProps = PropsWithChildren<{
@@ -78,8 +79,9 @@ function Panel(props: PanelProps) {
           })
         }
       },
+      isOpen: () => isOpen,
     }
-  }, [refs])
+  }, [refs, isOpen])
 
   // Re-calculate position when the panel size changes
   useEffect(() => {
