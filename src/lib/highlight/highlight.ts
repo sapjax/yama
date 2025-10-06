@@ -128,7 +128,7 @@ class Highlighter {
     let textOffset = 0
     const nodeOffsets = textNodes.map((node) => {
       const start = textOffset
-      textOffset += node.length
+      textOffset += node.nodeValue?.trim().length ?? 0
       return { node, start, end: textOffset }
     })
 
@@ -201,7 +201,11 @@ class Highlighter {
   }
 
   getRangeAtPoint(e: MouseEvent) {
-    const element = e.target as HTMLElement
+    let element = e.target as HTMLElement
+    if (element.tagName === 'RT') {
+      element = element.parentElement as HTMLElement
+    }
+
     const ranges = [...this.highlightContainerMap.get(element) ?? new Set()]
 
     for (const range of ranges) {
