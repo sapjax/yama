@@ -2,6 +2,7 @@ import type { WordStatus, Vocabulary } from '@/lib/core/mark'
 import type { DictionaryEntry, DictName } from '@/lib/core/dict'
 import { SegmentedToken } from '@/lib/core/segment/interface'
 import { ProtocolWithReturn, ProtocolMap } from 'webext-bridge'
+import { sendMessage } from 'webext-bridge/content-script'
 
 declare module 'webext-bridge' {
   interface ProtocolMap {
@@ -16,6 +17,7 @@ declare module 'webext-bridge' {
     [Messages.jpdb_get_decks]: ProtocolWithReturn<{}, Deck[]>
     [Messages.get_tab_whitelist_status]: ProtocolWithReturn<{ domain: string }, boolean>
     [Messages.toggle_whitelist_status]: { domain: string, tabId: number }
+    [Messages.set_theme]: { theme: 'light' | 'dark' }
 
     // AI streaming
     [Messages.ai_explain_stream_start]: { sentence: string, word: string }
@@ -30,7 +32,7 @@ export type Deck = {
   name: string
 }
 
-enum Messages {
+const enum Messages {
   segment = 'segment',
   mark_word = 'mark_word',
   get_marked_words = 'get_marked_words',
@@ -42,6 +44,7 @@ enum Messages {
   jpdb_get_decks = 'jpdb_get_decks',
   get_tab_whitelist_status = 'get_tab_whitelist_status',
   toggle_whitelist_status = 'toggle_whitelist_status',
+  set_theme = 'set_theme',
 
   ai_explain_stream_start = 'ai_explain_stream_start',
   ai_explain_stream_chunk = 'ai_explain_stream_chunk',

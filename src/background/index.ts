@@ -214,3 +214,7 @@ onMessage(Messages.ai_explain_stream_cancel, () => {
     currentAiStreamController = null
   }
 })
+
+onMessage(Messages.set_theme, async ({ data }) => {
+  updateIconBadge(services.wordMarker.countLearningWords(), data.theme)
+})

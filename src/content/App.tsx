@@ -7,6 +7,9 @@ import Toolbar from './components/Toolbar'
 import Panel, { PanelHandler } from './components/Panel'
 import { AiExplain, AiExplainHandler } from './components/AiExplain'
 import { DictName } from '@/lib/core/dict'
+import { Messages } from '@/lib/message'
+import { getThemeMode } from '@/lib/utils'
+import { sendMessage } from 'webext-bridge/content-script'
 
 function App() {
   const [curWord, setCurWord] = useState('')
@@ -47,6 +50,8 @@ function App() {
         })
       },
     )
+
+    sendMessage(Messages.set_theme, { theme: getThemeMode() }, 'background')
   }, [])
 
   useEffect(() => {
