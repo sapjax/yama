@@ -144,17 +144,25 @@ class Highlighter {
       return /[\s\uFEFF\xA0]/.test(char)
     }
 
+    let globalConsumedIndex = 0
+
     const findNodeForCharIndex = (segment: SegmentedToken) => {
       let matchedText = ''
       let startNode = null
       let endNode = null
       let startPos = -1
       let endPos = -1
+      let localConsumedIndex = 0
 
       for (let i = 0; i < textNodes.length; i++) {
         const node = textNodes[i]
         const nodeText = node.nodeValue ?? ''
         for (let j = 0; j < nodeText.length; j++) {
+          localConsumedIndex++
+          if (localConsumedIndex < globalConsumedIndex) {
+            continue
+          }
+
           const char = nodeText[j]
           if (isWhitespace(char)) {
             continue
@@ -183,9 +191,8 @@ class Highlighter {
           if (matchedText === segment.surfaceForm) {
             endNode = node
             endPos = j + 1 // + 1 to include the end char
-            textNodes = textNodes.slice(i)
+            globalConsumedIndex = localConsumedIndex
             return { startNode, startPos, endNode, endPos }
-            // mismatch, reset the matched state
           }
         }
       }
