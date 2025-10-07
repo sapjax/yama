@@ -2,19 +2,19 @@ import type { Theme } from '@/lib/utils/theme'
 
 const colors = {
   light: {
-    body: 'white', // Dark gray-blue
-    outline: '#4A5568',
-    snowCap: '#4A5568',
+    body: '#666666', // Dark gray-blue
+    outline: '#666666',
+    badge: 'white',
   },
   dark: {
-    body: '#4A5568', // Dark gray-blue
-    outline: 'white',
-    snowCap: 'white',
+    body: '#eeeeee', // Dark gray-blue
+    outline: '#eeeeee',
+    badge: 'black',
   },
   unknown: {
-    body: 'white', // Dark gray-blue
-    outline: '#4A5568',
-    snowCap: 'white',
+    body: '#eeeeee', // Dark gray-blue
+    outline: 'black',
+    badge: 'black',
   },
 }
 
@@ -41,7 +41,7 @@ export function updateIconBadge(count: number, theme?: Theme) {
     const plaqueY = 18 // Adjusted Y for the new mountain shape
 
     // White text on the plaque
-    context.fillStyle = colors[theme ?? 'unknown'].outline
+    context.fillStyle = colors[theme ?? 'unknown'].badge
     context.fillText(badgeText, size / 2, plaqueY + plaqueHeight / 2 - 1)
   }
 
@@ -72,23 +72,5 @@ export function drawIcon(canvas: OffscreenCanvas, size: number = 32, theme?: The
   context.fill()
   context.stroke()
 
-  // A more prominent snow cap on the first peak
-  context.beginPath()
-  context.moveTo(10 * scale, 2 * scale) // Peak
-  context.lineTo(14 * scale, 14 * scale) // Bottom right
-  context.lineTo(7.3 * scale, 14 * scale) // Bottom left
-  context.closePath()
-  context.fillStyle = color.snowCap
-  context.fill()
-  context.closePath()
-
-  // add snow cap on the second peak
-  context.beginPath()
-  context.moveTo(24 * scale, 11 * scale) // Peak
-  context.lineTo(25 * scale, 14 * scale) // Bottom right
-  context.lineTo(20 * scale, 14 * scale) // Bottom left
-  context.closePath()
-  context.fillStyle = color.snowCap
-  context.fill()
   return context
 }

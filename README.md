@@ -1,52 +1,61 @@
-# React + Vite + CRXJS
 
-This template helps you quickly start developing Chrome extensions with React, TypeScript and Vite. It includes the CRXJS Vite plugin for seamless Chrome extension development.
+<p align="center">
+    <img width="150px" src="./public/logo.png" />
+   <h3 align="center">Yama</h3>
+   <p align="center">acquire Japanese vocabulary on <mark>any</mark> website</p>
+</p>
 
-## Features
+# Yama :: Dictionary & Word Tracker
 
-- React with TypeScript
-- TypeScript support
-- Vite build tool
-- CRXJS Vite plugin integration
-- Chrome extension manifest configuration
+Yama (山) is a browser extension designed to help Japanese learners read web content or watch videos  more immersive and effectively. It turns any webpage into a study tool by providing instant dictionary lookups, word tracking, and jpdb sync.
 
-## Quick Start
+Like LingQ、Migaku、relingo、trancy, but free and open source.
 
-1. Install dependencies:
+## Key Features
 
-```bash
-npm install
-```
+*   **Instant Dictionary Lookup**: Hover over any Japanese word to see its definition, reading. Supports multiple dictionary sources.
+    *   *JPDB*
+    *   *Jisho*
 
-2. Start development server:
+*   **Word Tracking**: By default all words are `UnSeen`, You can mark words as `Tracking`, `Ignored`, or `Never Forget`. Yama highlights words with different colors, giving you a clear overview of your vocabulary.
 
-```bash
-npm run dev
-```
+*   **AI Sentence Explanation**: You can config your own AI endpoint to get ai explanation.
 
-3. Open Chrome and navigate to `chrome://extensions/`, enable "Developer mode", and load the unpacked extension from the `dist` directory.
+*   **On-Page Statistics**: Click the extension icon to see a distribution chart of all highlighted words on the current page, giving you a quick glance at the comprehensible level of the page.
 
-4. Build for production:
+*   **[JPDB.io](https://jpdb.io/) Integration**: Automatically sync words you mark on webpages to your JPDB.io account to easily create flashcards.
+     > highly recommended to enable jpdb synchronization, you can use it as a backup and review system.
 
-```bash
-npm run build
-```
+*   **Highly Customizable**:
+    *   Customize the highlight color and style (background, underline, etc.) for different word statuses.
+    *   Configure the dictionaries you want to use.
+    *   Set keyboard shortcuts to quickly mark words.
 
-## Project Structure
+## Installation
 
-- `src/popup/` - Extension popup UI
-- `src/content/` - Content scripts
-- `manifest.config.ts` - Chrome extension manifest configuration
+1.  Download from the [Chrome Web Store]() (Coming Soon)
 
-## Documentation
+## Screenshots
 
-- [React Documentation](https://reactjs.org/)
-- [Vite Documentation](https://vitejs.dev/)
-- [CRXJS Documentation](https://crxjs.dev/vite-plugin)
+|   |  |
+| -------- | -------- | 
+| web page  | <img width="350px" style="border: 1px solid #ccc;" src="./screenshots/web.jpg" />  | 
+| youtube | <img width="350px" style="border: 1px solid #ccc;" src="./screenshots/youtube.jpg" />  | 
+| youtube | <img width="350px" style="border: 1px solid #ccc;" src="./screenshots/stats.jpg" />  | 
 
-## Chrome Extension Development Notes
+## How to Use
 
-- Use `manifest.config.ts` to configure your extension
-- The CRXJS plugin automatically handles manifest generation
-- Content scripts should be placed in `src/content/`
-- Popup UI should be placed in `src/popup/`
+1.  After installation, navigate to a Japanese website you want to read and click the Yama icon in your browser's toolbar.
+2.  In the popup window, enable the switch to add the current site to the whitelist.
+3.  Yama will automatically start analyzing and highlighting words.
+4.  Hover over words to see their definitions.
+5.  Use the floating panel's toolbar or keyboard shortcuts to mark words.
+6.  Click the extension icon to view statistics for the current page.
+7.  Click the extension icon then click settings icon to go to the options page for customize configuration (such as colors, jpdb sync or ai explain).
+
+## Development
+
+1.  Clone the repository: `git clone https://github.com/your-repo/yama.git`
+2.  Install dependencies: `bun install`
+3.  Start the development server: `bun dev`
+4.  Load the `dist` folder as an unpacked extension in your browser.

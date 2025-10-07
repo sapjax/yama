@@ -5,7 +5,7 @@ import { drawIcon } from '../src/lib/utils/icon'
 
 function generateIcon(size: number) {
   const canvas = createCanvas(size, size)
-  drawIcon(canvas as any, size, 'light')
+  drawIcon(canvas as any, size)
   return canvas
 }
 

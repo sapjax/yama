@@ -88,7 +88,7 @@ function Popup() {
 
   return (
     <main className="relative flex w-64 flex-col items-center justify-center gap-4 bg-background p-4 pt-6 pb-8 text-foreground">
-      <StatisticsChart stats={stats} settings={settings} />
+      {isWhitelisted && <StatisticsChart stats={stats} settings={settings} />}
       <div className="flex h-full min-h-28 flex-col items-center justify-center">
         {renderContent()}
       </div>
