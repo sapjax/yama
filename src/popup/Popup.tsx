@@ -6,6 +6,9 @@ import { Messages, WordStatistics } from '@/lib/message'
 import { AppSettings, getSettings } from '@/lib/settings'
 import { StatisticsChart } from './StatisticsChart'
 
+import { Settings } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+
 function Popup() {
   const [currentDomain, setCurrentDomain] = useState<string | null>(null)
   const [currentTabId, setCurrentTabId] = useState<number | null>(null)
@@ -25,18 +28,18 @@ function Popup() {
           setCurrentDomain(domain)
           setCurrentTabId(tab.id)
 
-          const [whitelisted, statistics, appSettings] = await Promise.all([
-            sendMessage(Messages.get_tab_whitelist_status, { domain }, 'background'),
-            sendMessage(Messages.get_statistics, {}, {
-              context: 'content-script',
-              tabId: tab.id,
-            }),
-            getSettings(),
-          ])
+          const isWhitelisted = await sendMessage(Messages.get_tab_whitelist_status, { domain }, 'background')
+          setIsWhitelisted(isWhitelisted)
+          setIsLoading(false)
 
-          setIsWhitelisted(whitelisted)
-          setStats(statistics)
-          setSettings(appSettings)
+          if (!isWhitelisted) return
+
+          sendMessage(Messages.get_statistics, {}, {
+            context: 'content-script',
+            tabId: tab.id,
+          }).then(setStats)
+
+          getSettings().then(setSettings)
         } catch (e) {
           setCurrentDomain(null)
         }
@@ -51,6 +54,10 @@ function Popup() {
     const newStatus = !isWhitelisted
     setIsWhitelisted(newStatus)
     await sendMessage(Messages.toggle_whitelist_status, { domain: currentDomain, tabId: currentTabId }, 'background')
+  }
+
+  const handleOpenOptions = () => {
+    chrome.runtime.openOptionsPage()
   }
 
   const renderContent = () => {
@@ -80,10 +87,15 @@ function Popup() {
   }
 
   return (
-    <main className="flex w-64 flex-col items-center justify-center gap-4 bg-background p-4 text-foreground">
+    <main className="relative flex w-64 flex-col items-center justify-center gap-4 bg-background p-4 pt-6 pb-8 text-foreground">
       <StatisticsChart stats={stats} settings={settings} />
-      <div className="flex h-full min-h-32 flex-col items-center justify-center">
+      <div className="flex h-full min-h-28 flex-col items-center justify-center">
         {renderContent()}
+      </div>
+      <div className="absolute right-1 bottom-1">
+        <Button variant="ghost" size="icon" onClick={handleOpenOptions}>
+          <Settings className="h-4 w-4" />
+        </Button>
       </div>
     </main>
   )
