@@ -106,18 +106,14 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
             {definition.altSpellings && definition.altSpellings.length > 0 && (
               <div className="mt-4 text-xs">
                 <table className="mt-1 w-fit border-separate border border-accent-foreground text-center text-xs text-muted-foreground">
-                  <caption className="caption-bottom p-2">Alt Spellings </caption>
+                  <caption className="caption-bottom p-2">Alt Spellings</caption>
                   <tbody>
-                    <tr>
-                      {definition.altSpellings.map((s, i) => (
-                        <td key={i} className="border border-accent-foreground p-2 text-sm whitespace-nowrap text-foreground" dangerouslySetInnerHTML={{ __html: s.spelling }}></td>
-                      ))}
-                    </tr>
-                    <tr>
-                      {definition.altSpellings.map((s, i) => (
-                        <td key={i} className="border border-accent-foreground p-2">{s.percent}</td>
-                      ))}
-                    </tr>
+                    {definition.altSpellings.map((s, i) => (
+                      <tr key={i}>
+                        <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground" dangerouslySetInnerHTML={{ __html: s.spelling }}></td>
+                        <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.percent}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -126,19 +122,15 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
             {/* Alternative Readings */}
             {definition.altReadings && definition.altReadings.length > 0 && (
               <div className="mt-4 text-xs">
-                <table className="mt-1 w-fit table-auto border-separate border border-accent-foreground text-center text-xs text-muted-foreground">
-                  <caption className="caption-bottom p-2">Alt Readings</caption>
+                <table className="mt-1 w-fit border-separate border border-accent-foreground text-center text-xs text-muted-foreground">
+                  <caption className="caption-bottom p-2">Alternative Readings</caption>
                   <tbody>
-                    <tr>
-                      {definition.altReadings.map((s, i) => (
-                        <td key={i} className="border border-accent-foreground p-2 text-sm whitespace-nowrap  text-foreground">{s.reading}</td>
-                      ))}
-                    </tr>
-                    <tr>
-                      {definition.altReadings.map((s, i) => (
-                        <td key={i} className="border border-accent-foreground p-2">{s.percent}</td>
-                      ))}
-                    </tr>
+                    {definition.altReadings.map((s, i) => (
+                      <tr key={i}>
+                        <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.reading}</td>
+                        <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.percent}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
