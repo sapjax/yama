@@ -39,9 +39,10 @@ Like LingQ、Migaku、relingo、trancy, but free and open source.
 
 |   |  |
 | -------- | -------- | 
-| web page  | <img width="350px" style="border: 1px solid #ccc;" src="./screenshots/web.jpg" />  | 
-| youtube | <img width="350px" style="border: 1px solid #ccc;" src="./screenshots/youtube.jpg" />  | 
-| youtube | <img width="350px" style="border: 1px solid #ccc;" src="./screenshots/stats.jpg" />  | 
+| web page  | <img width="500px" style="border: 1px solid #ccc;" src="./screenshots/web.jpg" />  | 
+| youtube | <img width="500px" style="border: 1px solid #ccc;" src="./screenshots/youtube.jpg" />  | 
+| statistics | <img width="350px" style="border: 1px solid #ccc;" src="./screenshots/stats.jpg" />  | 
+| settings | <img width="500px" style="border: 1px solid #ccc;" src="./screenshots/settings.jpg" />  | 
 
 ## How to Use
 
