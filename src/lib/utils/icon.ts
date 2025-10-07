@@ -1,4 +1,4 @@
-import type { Theme } from '@/lib/utils/theme'
+import type { Theme } from './theme'
 
 const colors = {
   light: {
