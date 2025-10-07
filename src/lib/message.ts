@@ -2,7 +2,8 @@ import type { WordStatus, Vocabulary } from '@/lib/core/mark'
 import type { DictionaryEntry, DictName } from '@/lib/core/dict'
 import { SegmentedToken } from '@/lib/core/segment/interface'
 import { ProtocolWithReturn, ProtocolMap } from 'webext-bridge'
-import { sendMessage } from 'webext-bridge/content-script'
+
+type WordStatistics = Record<WordStatus, number>
 
 declare module 'webext-bridge' {
   interface ProtocolMap {
@@ -24,6 +25,9 @@ declare module 'webext-bridge' {
     [Messages.ai_explain_stream_chunk]: { chunk: string }
     [Messages.ai_explain_stream_end]: {}
     [Messages.ai_explain_stream_cancel]: {}
+
+    // Statistics
+    [Messages.get_statistics]: ProtocolWithReturn<{}, WordStatistics>
   }
 }
 
@@ -50,6 +54,8 @@ const enum Messages {
   ai_explain_stream_chunk = 'ai_explain_stream_chunk',
   ai_explain_stream_end = 'ai_explain_stream_end',
   ai_explain_stream_cancel = 'ai_explain_stream_cancel',
+  get_statistics = 'get_statistics',
+
 }
 
 async function sendMessageToAllTabs<T extends Messages>(action: T, data: ProtocolMap[T]) {
@@ -65,6 +71,7 @@ async function sendMessageToAllTabs<T extends Messages>(action: T, data: Protoco
 }
 
 export {
+  type WordStatistics,
   Messages,
   sendMessageToAllTabs,
 }

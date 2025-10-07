@@ -1,9 +1,9 @@
 import { invalidTags } from './constant'
 import { type WordStatus, type MarkedWordsMap } from '@/lib/core/mark/type'
 import { SegmentedToken } from '@/lib/core/segment/interface'
-import { Messages } from '@/lib/message'
+import { Messages, type WordStatistics } from '@/lib/message'
 import { getSentenceFromRange } from '@/lib/utils'
-import { sendMessage } from 'webext-bridge/content-script'
+import { sendMessage, onMessage } from 'webext-bridge/content-script'
 import { createCSSHighlights, type ColorKey } from './colors'
 
 class Highlighter {
@@ -358,6 +358,23 @@ class Highlighter {
         default:
           break
       }
+    })
+
+    onMessage(Messages.get_statistics, () => {
+      const stats: WordStatistics = {
+        UnSeen: 0,
+        Searched: 0,
+        Tracking: 0,
+        Ignored: 0,
+        Never_Forget: 0,
+      }
+      this.wordToBaseFormMap.forEach((baseForm) => {
+        const status = this.getWordStatus(baseForm)
+        if (status in stats) {
+          stats[status]++
+        }
+      })
+      return stats
     })
   }
 
