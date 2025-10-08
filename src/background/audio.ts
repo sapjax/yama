@@ -2,7 +2,7 @@ const playAudio = async (audioUrl?: string, text?: string, volume = 100) => {
   if (!audioUrl && !text) return
 
   if (audioUrl) {
-    const audioPageUrl = chrome.runtime.getURL('audio.html')
+    const audioPageUrl = chrome.runtime.getURL('src/offscreen/audio.html')
 
     await setupOffscreenDocument(audioPageUrl)
     chrome.runtime.sendMessage({
