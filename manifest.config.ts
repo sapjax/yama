@@ -23,7 +23,6 @@ export default defineManifest({
     'scripting',
     'activeTab',
     'offscreen',
-    'contentSettings',
   ],
   options_page: 'src/options/index.html',
   background: {
