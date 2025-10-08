@@ -21,73 +21,74 @@ const parseDocument = async (word: string, html: string) => {
     ],
   }).parseFromString(html).root
 
-  const root = doc.querySelector('#result-0')
-  // not a kanji
-  if (root) {
-    const reading = root.querySelector('.primary-spelling')?.querySelectorAll('rt')?.map(rt => rt.textContent).join()
-    const frequency = [...root.querySelectorAll('.tag')].map(n => n.textContent).find(t => t.startsWith('Top'))
-    const meanings = [...root.querySelectorAll('.description')].map(
-      (node) => {
-        const noteNode = node.querySelector('div')
-        const note = noteNode?.textContent?.replace(/^\d+./, '').replaceAll('&#39;', '\'').replaceAll('&quot;', '\"')
-        noteNode?.remove()
-        const explain = node.textContent?.replace(/^\d+./, '').replaceAll('&#39;', '\'').replaceAll('&quot;', '\"')
+  const roots = doc.querySelectorAll('.result')
+
+  const definitions = roots.map((root) => {
+    const isKanji = root.getAttribute('class')?.includes('kanji')
+    if (!isKanji) {
+    // example: https://jpdb.io/search?q=%E8%89%B2
+      const reading = root.querySelector('.primary-spelling')?.querySelectorAll('rt')?.map(rt => rt.textContent).join()
+      const frequency = [...root.querySelectorAll('.tag')].map(n => n.textContent).find(t => t.startsWith('Top'))
+      const meanings = [...root.querySelectorAll('.description')].map(
+        (node) => {
+          const noteNode = node.querySelector('div')
+          const note = noteNode?.textContent?.replace(/^\d+./, '').replaceAll('&#39;', '\'').replaceAll('&quot;', '\"')
+          noteNode?.remove()
+          const explain = node.textContent?.replace(/^\d+./, '').replaceAll('&#39;', '\'').replaceAll('&quot;', '\"')
+          return {
+            explain,
+            note,
+          }
+        },
+      )
+
+      const audioUrls = root.querySelector('.vocabulary-audio')
+        ?.getAttribute('data-audio')?.split(',')
+        .map(url => 'https://jpdb.io/static/v/' + url)
+
+      const altSpellings = [...root.querySelectorAll('.alt-spelling')].map((node) => {
+        const spelling = node.querySelectorAll('ruby').map(n => n.outerHTML).join('')
         return {
-          explain,
-          note,
+          spelling,
+          percent: node.querySelector('.property-text')?.textContent,
         }
-      },
-    )
+      })
 
-    const audioUrls = root.querySelector('.vocabulary-audio')
-      ?.getAttribute('data-audio')?.split(',')
-      .map(url => 'https://jpdb.io/static/v/' + url)
-
-    const altSpellings = [...root.querySelectorAll('.alt-spelling')].map((node) => {
-      const spelling = node.querySelectorAll('ruby').map(n => n.outerHTML).join('')
       return {
-        spelling,
-        percent: node.querySelector('.property-text')?.textContent,
-      }
-    })
-
-    return {
-      definitions: [{
         spelling: word,
         reading: reading ?? '',
         frequency,
         meanings,
         audioUrls,
         altSpellings,
-      }],
-    } as DictionaryEntry
-  // kanji
-  } else {
-    const root = doc.querySelector('.kanji')
-    if (!root) return null
-    const readingListNode = root.querySelector('.kanji-reading-list-common')
-    const reading = readingListNode?.querySelector('a')?.textContent
-    const frequency = [...root.querySelector('.subsection')?.querySelectorAll('td') ?? []].find(t => t.textContent?.startsWith('Top'))?.textContent
-    const meanings = [{
-      explain: root.querySelector('.subsection')?.textContent,
-    }]
-    const altReadings = readingListNode?.children.map((node) => {
-      return {
-        reading: node.querySelector('a')?.textContent,
-        percent: node.querySelector('div')?.textContent?.replace(/\(|\)/g, ''),
       }
-    })
+    } else if (isKanji) {
+      const readingListNode = root.querySelector('.kanji-reading-list-common')
+      const reading = readingListNode?.querySelector('a')?.textContent
+      const frequency = [...root.querySelector('.subsection')?.querySelectorAll('td') ?? []].find(t => t.textContent?.startsWith('Top'))?.textContent
+      const meanings = [{
+        explain: root.querySelector('.subsection')?.textContent,
+      }]
+      const altReadings = readingListNode?.children.map((node) => {
+        return {
+          reading: node.querySelector('a')?.textContent,
+          percent: node.querySelector('div')?.textContent?.replace(/\(|\)/g, ''),
+        }
+      })
 
-    return {
-      definitions: [{
+      return {
         spelling: word,
         reading: reading ?? '',
         frequency,
         meanings,
         altReadings,
-      }],
-    } as DictionaryEntry
-  }
+      }
+    }
+  })
+
+  return {
+    definitions: definitions,
+  } as DictionaryEntry
 }
 
 const JpdbDict: Dictionary = {
