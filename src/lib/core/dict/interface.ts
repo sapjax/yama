@@ -13,7 +13,7 @@ type Definition = {
   altSpellings?: { spelling: string, percent?: string, furigana?: string }[]
   altReadings?: { reading: string, percent?: string }[]
   pos?: string
-  pitchAccent?: string
+  pitchAccents?: { audioUrl: string, html: string }[]
   examples?: Example[]
   jlpt?: JLPTLevel
 }

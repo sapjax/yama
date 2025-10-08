@@ -1,4 +1,4 @@
-import { use, Suspense, memo, PropsWithChildren } from 'react'
+import { use, useState, Suspense, memo, PropsWithChildren } from 'react'
 import { dictAdapters, DictionaryEntry, DictName } from '@/lib/core/dict'
 import { Messages } from '@/lib/message'
 import { sendMessage } from 'webext-bridge/content-script'
@@ -30,64 +30,55 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
     <div className="mb-4 last:mb-0">
       <DictTitle word={word} dictName={dictName} />
 
-      {data.definitions.map((definition, index) => (
-        <div key={index} className="mb-3 last:mb-0">
+      {data.definitions.map((def, index) => (
+        <div key={`${def.spelling}_${def.reading}_${index}`} className="mb-3 last:mb-0">
           <div className="space-y-2 rounded-md border border-border bg-muted p-2.5 text-card-foreground">
             {/* Spelling and Reading */}
             <div className="flex items-center">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-base font-medium text-foreground">{definition.spelling}</span>
-                {definition.reading && definition.reading !== definition.spelling && (
-                  <span className="text-xs text-muted-foreground">
-                    [
-                    {definition.reading}
-                    ]
-                  </span>
-                )}
-              </div>
-              {
-                !!definition.audioUrls && definition.audioUrls.map((audioUrl, index) => {
-                  return (
-                    <div
-                      key={index}
-                      role="button"
-                      data-pronounce
-                      onClick={() => playAudio(definition.spelling, audioUrl)}
-                      className="mt-1 px-2 text-muted-foreground hover:text-primary"
-                    >
-                      <Volume2 className="h-3 w-3" />
-                    </div>
+              <div className="flex flex-wrap items-baseline gap-1.5">
+                <span className="text-base font-medium text-foreground">{def.spelling}</span>
+                {def.pitchAccents && def.pitchAccents.length > 0
+                  ? (
+                    <PitchAccents
+                      spelling={def.spelling}
+                      pitchAccents={def.pitchAccents}
+                    />
                   )
-                })
-              }
+                  : (
+                    <>
+                      {def.reading && def.reading !== def.spelling && (
+                        <span className="text-xs text-muted-foreground">
+                          [
+                          {def.reading}
+                          ]
+                        </span>
+                      )}
+                      {
+                        !!def.audioUrls && <AudioButton key={index} spelling={def.spelling} audioUrls={def.audioUrls} />
+                      }
+                    </>
+                  )}
+              </div>
 
               {/* Tags */}
               <div className="ml-auto flex flex-wrap gap-1">
-                {!!definition.jlpt && (
-                  <Badge classNames={getJLPTColor(definition.jlpt)}>
-                    {definition.jlpt}
+                {!!def.jlpt && (
+                  <Badge classNames={getJLPTColor(def.jlpt)}>
+                    {def.jlpt}
                   </Badge>
                 )}
-                {definition.frequency && (
+                {def.frequency && (
                   <Badge classNames={getJLPTColor()}>
-                    {definition.frequency}
+                    {def.frequency}
                   </Badge>
                 )}
               </div>
             </div>
 
-            {/* Pitch Accent */}
-            {definition.pitchAccent && (
-              <div className="text-xs">
-                <span className="text-muted-foreground">pitch: </span>
-                <span className="font-mono text-foreground">{definition.pitchAccent}</span>
-              </div>
-            )}
-
             {/* Meanings */}
             <div>
               <ul className="space-y-0.5 text-sm leading-tight">
-                {definition.meanings.map((meaning, meaningIndex) => (
+                {def.meanings.map((meaning, meaningIndex) => (
                   <li key={meaningIndex} className="flex flex-col text-foreground">
                     <div className="flex">
                       <span className="mt-0.5 mr-1.5 flex-shrink-0 text-xs text-muted-foreground">
@@ -96,19 +87,20 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
                       </span>
                       <span>{meaning.explain}</span>
                     </div>
-                    {!!meaning.note && <div className="mb-2 pl-[2em] text-muted-foreground">{meaning.note}</div>}
+                    {!!meaning.note
+                      && <div className="mb-2 pl-[2em] text-muted-foreground">{meaning.note}</div>}
                   </li>
                 ))}
               </ul>
             </div>
 
             {/* Alternative Spellings */}
-            {definition.altSpellings && definition.altSpellings.length > 0 && (
+            {def.altSpellings && def.altSpellings.length > 0 && (
               <div className="mt-4 text-xs">
                 <table className="mt-1 w-fit border-separate border border-accent-foreground text-center text-xs text-muted-foreground">
                   <caption className="caption-bottom p-2">Alt Spellings</caption>
                   <tbody>
-                    {definition.altSpellings.map((s, i) => (
+                    {def.altSpellings.map((s, i) => (
                       <tr key={i}>
                         <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground" dangerouslySetInnerHTML={{ __html: s.spelling }}></td>
                         <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.percent}</td>
@@ -120,12 +112,12 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
             )}
 
             {/* Alternative Readings */}
-            {definition.altReadings && definition.altReadings.length > 0 && (
+            {def.altReadings && def.altReadings.length > 0 && (
               <div className="mt-4 text-xs">
                 <table className="mt-1 w-fit border-separate border border-accent-foreground text-center text-xs text-muted-foreground">
                   <caption className="caption-bottom p-2">Alternative Readings</caption>
                   <tbody>
-                    {definition.altReadings.map((s, i) => (
+                    {def.altReadings.map((s, i) => (
                       <tr key={i}>
                         <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.reading}</td>
                         <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.percent}</td>
@@ -137,21 +129,15 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
             )}
 
             {/* Examples */}
-            {definition.examples && definition.examples.length > 0 && (
+            {def.examples && def.examples.length > 0 && (
               <div className="space-y-1.5">
                 <span className="text-xs font-medium text-muted-foreground">例句:</span>
-                {definition.examples.map((example, exampleIndex) => (
+                {def.examples.map((example, exampleIndex) => (
                   <div key={exampleIndex} className="rounded-md border border-accent/40 bg-accent/30 p-2">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-xs leading-tight font-medium text-foreground">{example.text}</p>
                       {example.audioUrl && (
-                        <div
-                          role="button"
-                          onClick={() => playAudio(example.text, example.audioUrl)}
-                          className="flex-shrink-0 p-2 text-muted-foreground hover:text-foreground"
-                        >
-                          <Volume2 className="h-2.5 w-2.5" />
-                        </div>
+                        <AudioButton spelling={example.text} audioUrls={[example.audioUrl]} />
                       )}
                     </div>
                     {example.translation && <p className="mt-0.5 text-xs leading-tight text-muted-foreground">{example.translation}</p>}
@@ -242,12 +228,56 @@ const getJLPTColor = (level?: string) => {
   }
 }
 
-type BadgeProps = PropsWithChildren<{ classNames?: string }>
+function AudioButton({ spelling, audioUrls }: { spelling: string, audioUrls: string[] }) {
+  const [nextAudio, setNextAudio] = useState(audioUrls[0])
 
-const Badge = ({ classNames, children }: BadgeProps) => {
+  return (
+    <div
+      role="button"
+      data-pronounce
+      onClick={() => {
+        playAudio(spelling, nextAudio)
+        setNextAudio(audioUrls[(audioUrls.indexOf(nextAudio) + 1) % audioUrls.length])
+      }}
+      className="mt-1 px-2 text-muted-foreground hover:text-primary"
+    >
+      <Volume2 className="h-3 w-3" />
+    </div>
+  )
+}
+
+function PitchAccents({ spelling, pitchAccents }: {
+  spelling: string
+  pitchAccents: {
+    audioUrl: string
+    html: string
+  }[]
+}) {
+  const accent = pitchAccents[0]
+  if (!accent) return null
+
+  return (
+    <div
+      key={accent.audioUrl}
+      className="flex text-xs text-muted-foreground"
+      style={{
+        '--background-color': 'var(--muted)',
+        '--pitch-high-s': 'rgb(232, 104, 123)',
+        '--pitch-high-e': 'rgba(232, 104, 123, 0)',
+        '--pitch-low-s': 'rgb(78, 134, 202)',
+        '--pitch-low-e': 'rgb(78, 134, 202, 0)',
+      } as React.CSSProperties}
+    >
+      <div dangerouslySetInnerHTML={{ __html: accent.html }}></div>
+      <AudioButton spelling={spelling} audioUrls={[accent.audioUrl]} />
+    </div>
+  )
+}
+
+function Badge({ classNames, children }: PropsWithChildren<{ classNames?: string }>) {
   return (
     <span className={clsx(
-      'inline-flex items-center rounded-md px-1 py-0.5 text-[10px] leading-[0.9] font-medium', classNames,
+      'inline-flex items-center rounded-md px-1 py-0.5 text-[10px] leading-[0.9] font-medium text-nowrap', classNames,
     )}
     >
       {children}

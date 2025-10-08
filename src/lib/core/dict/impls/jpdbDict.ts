@@ -54,6 +54,20 @@ const parseDocument = async (word: string, html: string) => {
         }
       })
 
+      const pitchAccent = root.querySelector('.subsection-pitch-accent')
+      const pitchAccentAudios = pitchAccent?.querySelectorAll('.vocabulary-audio')
+      let pitchAccents
+      if (pitchAccentAudios) {
+        pitchAccents = pitchAccentAudios.map((audioElement) => {
+          const audioUrl = 'https://jpdb.io/static/v/' + audioElement.getAttribute('data-audio')
+          const html = audioElement.parentElement!.querySelector('div')!.outerHTML
+          return {
+            audioUrl,
+            html,
+          }
+        })
+      }
+
       return {
         spelling: word,
         reading: reading ?? '',
@@ -61,6 +75,7 @@ const parseDocument = async (word: string, html: string) => {
         meanings,
         audioUrls,
         altSpellings,
+        pitchAccents,
       }
     } else if (isKanji) {
       const readingListNode = root.querySelector('.kanji-reading-list-common')

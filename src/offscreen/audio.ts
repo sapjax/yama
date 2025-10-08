@@ -12,7 +12,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
 
       const audio = new Audio(src)
       audio.volume = message.data?.volume / 100
-      audio.play().catch(error => console.log(error))
+      audio.play()
     } catch (error) {
       console.log(error)
     }
