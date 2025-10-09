@@ -260,22 +260,11 @@ class Highlighter {
       ?? this.highlightContainerMap.get(element.parentElement ?? document.body)
       ?? new Set()
 
-    const ranges = [...rangeSet]
-
-    for (const range of ranges) {
-      const rect = range.getBoundingClientRect()
-      if (
-        rect && rect.left <= e.clientX && rect.right >= e.clientX && rect.top <= e.clientY && rect.bottom >= e.clientY
-      ) {
-        const rects = range.getClientRects()
-        if (rects.length === 1) {
-          return range
-        } else {
-          for (const r of rects) {
-            if (r.left <= e.clientX && r.right >= e.clientX && r.top <= e.clientY && r.bottom >= e.clientY) {
-              return range
-            }
-          }
+    for (const range of rangeSet) {
+      const rects = range.getClientRects()
+      for (const r of rects) {
+        if (r.left <= e.clientX && r.right >= e.clientX && r.top <= e.clientY && r.bottom >= e.clientY) {
+          return { range, rect: r }
         }
       }
     }
