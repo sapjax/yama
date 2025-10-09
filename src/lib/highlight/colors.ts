@@ -1,5 +1,5 @@
 import { getContrastingColor, rgbStringToHsva } from '@uiw/color-convert'
-import { defaultColors, defaultReviewColor, type ColorSettings, type ReviewColorSettings } from '@/lib/settings'
+import { AppSettings, defaultColors, defaultReviewColor, SETTINGS_KEY, type ColorSettings, type ReviewColorSettings } from '@/lib/settings'
 
 type Colors = ColorSettings & ReviewColorSettings
 type ColorKey = keyof Colors
@@ -104,4 +104,25 @@ function genMarkStyles(colors: Colors, markStyle: typeof MarkStyles[number] = 't
     }).join('\n')
 }
 
-export { type ColorKey, genMarkStyles, getCSSHighlightKey, createCSSHighlights, MarkStyles }
+function injectColors(settings: AppSettings) {
+// this styles should place outside the shadow dom
+  const style = document.createElement('style')
+  style.id = 'yama-style'
+  style.textContent = genMarkStyles(
+    { ...settings.colors, ...settings.reviewColors },
+    settings.markStyle,
+  )
+  document.head.appendChild(style)
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync' && changes[SETTINGS_KEY]) {
+      const newSettings = changes[SETTINGS_KEY].newValue
+      style.textContent = genMarkStyles(
+        { ...newSettings.colors, ...newSettings.reviewColors },
+        newSettings.markStyle,
+      )
+    }
+  })
+}
+
+export { type ColorKey, genMarkStyles, getCSSHighlightKey, createCSSHighlights, MarkStyles, injectColors }

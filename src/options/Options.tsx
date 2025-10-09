@@ -5,6 +5,7 @@ import { ColorSettings } from './components/ColorSettings'
 import { DictSettings } from './components/DictSettings'
 import { JpdbSettings } from './components/JpdbSettings'
 import { ShortcutSettings } from './components/ShortcutSettings'
+import { ThemeSettings } from './components/ThemeSettings'
 import { cn } from '@/lib/utils'
 
 const tabs = {
@@ -27,6 +28,10 @@ const tabs = {
   shortcuts: {
     label: 'Shortcuts',
     component: <ShortcutSettings />,
+  },
+  theme: {
+    label: 'Theme',
+    component: <ThemeSettings />,
   },
 }
 

@@ -2,7 +2,8 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import { useDebounce, useDebouncedCallback } from 'use-debounce'
 import { FloatingArrow, arrow, flip, hide, offset, shift, size, useFloating, useDismiss, useInteractions, useTransitionStyles } from '@floating-ui/react'
 import { sendMessage } from 'webext-bridge/content-script'
-import { Highlighter, genMarkStyles, initHighlighter } from '@/lib/highlight'
+import { Highlighter, injectColors, initHighlighter } from '@/lib/highlight'
+import { initTheme } from '@/lib/theme'
 import { AppSettings, getSettings } from '@/lib/settings'
 import { DictName } from '@/lib/core/dict'
 import { Messages } from '@/lib/message'
@@ -23,29 +24,11 @@ function App() {
   useEffect(() => {
     initHighlighter().then(
       async (highlighter) => {
+        await initTheme()
         highlightRef.current = highlighter
         const settings = await getSettings()
         setSettings(settings)
-
-        // this styles should place outside the shadow dom
-        const style = document.createElement('style')
-        style.id = 'yama-style'
-        style.textContent = genMarkStyles(
-          { ...settings.colors, ...settings.reviewColors },
-          settings.markStyle,
-        )
-        document.head.appendChild(style)
-
-        chrome.storage.onChanged.addListener((changes, area) => {
-          if (area === 'sync' && changes.settings) {
-            const newSettings = changes.settings.newValue
-            setSettings(newSettings)
-            style.textContent = genMarkStyles(
-              { ...newSettings.colors, ...newSettings.reviewColors },
-              newSettings.markStyle,
-            )
-          }
-        })
+        injectColors(settings)
       },
     )
 
@@ -138,7 +121,7 @@ function App() {
     })
     hideDelay.cancel()
     showDelay()
-  }, [refs])
+  }, [refs, hideDelay, showDelay])
 
   const updateWordDebounce = useDebouncedCallback(updateWord, 200)
 

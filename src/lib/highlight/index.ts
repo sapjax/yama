@@ -1,2 +1,2 @@
-export { genMarkStyles, getCSSHighlightKey, type ColorKey } from './colors'
+export { genMarkStyles, getCSSHighlightKey, type ColorKey, injectColors } from './colors'
 export { Highlighter, initHighlighter } from './highlight'

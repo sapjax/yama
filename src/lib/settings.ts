@@ -1,4 +1,4 @@
-const SETTINGS_KEY = 'yama-app-settings'
+export const SETTINGS_KEY = 'yama-app-settings'
 
 export const defaultColors = {
   UnSeen: { color: 'rgba(216, 226, 38, 0.5)', enabled: true },
@@ -39,6 +39,10 @@ export interface AppSettings {
   jpdbMiningDeckId: number | null
   jpdbLastSync: number | null
   markStyle: string
+  theme: {
+    type: 'default' | 'claude' | 'custom'
+    custom: string
+  }
   ai: {
     apiKey: string
     endpoint: string
@@ -62,6 +66,10 @@ export const defaultSettings: AppSettings = {
   jpdbMiningDeckId: null,
   jpdbLastSync: null,
   markStyle: 'background',
+  theme: {
+    type: 'default',
+    custom: '',
+  },
   ai: {
     apiKey: '',
     endpoint: 'https://api.openai.com/v1/chat/completions',

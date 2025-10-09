@@ -36,6 +36,7 @@ export function ShortcutSettings() {
     <div className="flex items-center gap-4">
       <Label htmlFor={`shortcut-${action}`} className="w-48">{label}</Label>
       <Input
+        readOnly
         id={`shortcut-${action}`}
         type="text"
         value={shortcuts[action]}
