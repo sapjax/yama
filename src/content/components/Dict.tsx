@@ -191,9 +191,11 @@ function DictLoading({ word, dictName }: DictProps) {
     <>
       <div className="flex flex-1 flex-col gap-2">
         <DictTitle word={word} dictName={dictName} />
-        <div className="h-5 w-32 animate-pulse rounded-md bg-muted"></div>
-        <div className="h-5 w-full animate-pulse rounded-md bg-muted"></div>
-        <div className="h-5 w-full animate-pulse rounded-md bg-muted"></div>
+        <div className="space-y-2 rounded-md border border-border bg-card p-2.5  text-card-foreground shadow-sm">
+          <div className="h-5 w-32 animate-pulse rounded-md bg-muted"></div>
+          <div className="h-5 w-full animate-pulse rounded-md bg-muted"></div>
+          <div className="h-5 w-full animate-pulse rounded-md bg-muted"></div>
+        </div>
       </div>
     </>
   )
