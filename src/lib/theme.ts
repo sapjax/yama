@@ -2,6 +2,7 @@ import { getSettings, AppSettings, SETTINGS_KEY } from './settings'
 import defaultTheme from '@/assets/themes/default.css?raw'
 import claudeTheme from '@/assets/themes/claude.css?raw'
 import neo_brutalismTheme from '@/assets/themes/neo_brutalism.css?raw'
+import pastel_dreamsTheme from '@/assets/themes/pastel_dreams.css?raw'
 
 const STYLE_ID = 'yama-theme'
 
@@ -9,6 +10,7 @@ const themes = {
   default: defaultTheme,
   claude: claudeTheme,
   neo_brutalism: neo_brutalismTheme,
+  pastel_dreams: pastel_dreamsTheme,
 }
 
 function formatStyle(style: string = '') {

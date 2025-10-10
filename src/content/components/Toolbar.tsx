@@ -34,6 +34,10 @@ export default function Toolbar(props: ToolbarProps) {
   )
 
   const getToolbarStatusColor = (s: WordStatus) => {
+    if (s === 'Never_Forget') {
+      return 'currentColor'
+    }
+
     if (colors) {
       const color = colors[s].color
       const hsva = rgbStringToHsva(color)

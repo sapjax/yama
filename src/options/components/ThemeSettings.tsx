@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import { useDebouncedCallback } from 'use-debounce'
 import defaultTheme from '@/assets/themes/default.css?raw'
 
-const themes = ['default', 'neo_brutalism', 'claude']
+const themes = ['default', 'neo_brutalism', 'claude', 'pastel_dreams']
 const STYLE_ID = 'yama-theme'
 
 export function ThemeSettings() {
