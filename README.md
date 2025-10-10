@@ -30,6 +30,7 @@ Like LingQ、Migaku、relingo、trancy, but free and open source.
     *   Customize the highlight color and style (background, underline, etc.) for different word statuses.
     *   Configure the dictionaries you want to use.
     *   Set keyboard shortcuts to quickly mark words.
+    *   Themes customize 
 
 ## Installation
 
@@ -39,10 +40,12 @@ Like LingQ、Migaku、relingo、trancy, but free and open source.
 
 |   |  |
 | -------- | -------- | 
-| web page  | <img width="500px" style="border: 1px solid #ccc;" src="./screenshots/web.jpg" />  | 
-| youtube | <img width="500px" style="border: 1px solid #ccc;" src="./screenshots/youtube.jpg" />  | 
-| statistics | <img width="350px" style="border: 1px solid #ccc;" src="./screenshots/stats.jpg" />  | 
-| settings | <img width="500px" style="border: 1px solid #ccc;" src="./screenshots/settings.jpg" />  | 
+| Web page  | <img width="500px" style="border: 1px solid #ccc;" src="./screenshots/web.png" />  | 
+| Youtube | <img width="500px" style="border: 1px solid #ccc;" src="./screenshots/youtube.jpg" />  | 
+| CIJ | <img width="500px" style="border: 1px solid #ccc;" src="./screenshots/cij.png" />  | 
+| AI Explain| <img width="500px" style="border: 1px solid #ccc;" src="./screenshots/ai.png" />  | 
+| Statistics | <img width="350px" style="border: 1px solid #ccc;" src="./screenshots/stats.jpg" />  | 
+| Settings | <img width="500px" style="border: 1px solid #ccc;" src="./screenshots/settings.jpg" />  | 
 
 ## How to Use
 
