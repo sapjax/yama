@@ -257,7 +257,7 @@ function App() {
             )}
         </div>
         <div
-          className="scrollbar-thin relative overflow-y-scroll p-3 pr-1.5"
+          className="scrollbar-thin relative overflow-y-auto overscroll-contain p-3 pr-1"
           style={{
             maxHeight: 'min(400px, var(--available-height))',
           }}

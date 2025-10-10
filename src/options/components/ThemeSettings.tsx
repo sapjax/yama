@@ -103,7 +103,7 @@ export function ThemeSettings() {
             id="custom-theme-css"
             value={customCss}
             onChange={e => setCustomCss(e.target.value)}
-            className="max-h-[500px] min-h-[200px] font-mono"
+            className="scrollbar-thin max-h-[500px] min-h-[200px] font-mono "
             placeholder={defaultTheme}
           />
           <Button onClick={handleSave}>{saveState}</Button>

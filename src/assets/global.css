@@ -70,6 +70,7 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
+    scrollbar-gutter: stable;
     scrollbar-color: var(--border) transparent;
   }
 }
