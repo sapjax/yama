@@ -246,7 +246,15 @@ function App() {
               <h3 className="text-base font-semibold text-foreground">{curWord}</h3>
             </div>
           </div>
-          {highlightRef.current && <Toolbar word={curWord} highlighter={highlightRef.current} range={curRange} />}
+          {highlightRef.current
+            && (
+              <Toolbar
+                word={curWord}
+                highlighter={highlightRef.current}
+                range={curRange}
+                colors={settings?.colors}
+              />
+            )}
         </div>
         <div
           className="scrollbar-thin relative overflow-y-scroll p-3 pr-1.5"

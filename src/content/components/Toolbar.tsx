@@ -1,12 +1,15 @@
 import { useSyncExternalStore, useRef } from 'react'
 import { WordStatus, WordStatusList } from '@/lib/core/mark'
-import { getCSSHighlightKey, Highlighter } from '@/lib/highlight'
+import { Highlighter, getCSSHighlightKey } from '@/lib/highlight'
+import { AppSettings } from '@/lib/settings'
+import { hsvaToRgbaString, rgbStringToHsva } from '@uiw/color-convert'
 import clsx from 'clsx'
 
 type ToolbarProps = {
   word: string
   highlighter: Highlighter
   range: Range | null
+  colors?: AppSettings['colors']
 }
 
 const KanjiLabelMap = {
@@ -22,7 +25,7 @@ const markAbleStatuses = WordStatusList
 type ButtonStatus = (typeof markAbleStatuses)[number]
 
 export default function Toolbar(props: ToolbarProps) {
-  const { word, highlighter, range } = props
+  const { word, highlighter, range, colors } = props
   const trackRef = useRef<HTMLDivElement>(null)
 
   const status = useSyncExternalStore(
@@ -31,7 +34,14 @@ export default function Toolbar(props: ToolbarProps) {
   )
 
   const getToolbarStatusColor = (s: WordStatus) => {
-    return `var(--${getCSSHighlightKey(s)})`
+    if (colors) {
+      const color = colors[s].color
+      const hsva = rgbStringToHsva(color)
+      hsva.a = 1
+      return hsvaToRgbaString(hsva)
+    } else {
+      return `var(--${getCSSHighlightKey(s)})`
+    }
   }
 
   const currentIndex = status ? markAbleStatuses.indexOf(status as ButtonStatus) : -1
