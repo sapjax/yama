@@ -2,9 +2,23 @@
 @source inline("{m,p}{x,y,t,b,l,r}-{1..10}");
 
 
+:root,
+:host {
+  --tag-1: oklch(0.65 0.24 26.92);
+  --tag-2: oklch(80.468% 0.16928 75.556);
+  --tag-3: oklch(0.56 0.24 260.83);
+  --tag-4: oklch(0.73 0.25 142.50);
+  --tag-5: oklch(0.59 0.27 328.36);
+}
 
 
 @theme inline {
+  --color-tag-1: var(--tag-1);
+  --color-tag-2: var(--tag-2);
+  --color-tag-3: var(--tag-3);
+  --color-tag-4: var(--tag-4);
+  --color-tag-5: var(--tag-5);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -24,6 +38,11 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -51,6 +70,6 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: var(--sidebar-border) transparent;
+    scrollbar-color: var(--border) transparent;
   }
 }

@@ -23,11 +23,4 @@
   --text-lg: calc(1.125 * var(--hem));
   --text-xl: calc(1.25 * var(--hem));
   --text-2xl: calc(1.5 * var(--hem));
-
-  /* Radius */
-  --radius-xs: calc(0.125 * var(--hem));
-  --radius-sm: calc(0.25 * var(--hem));
-  --radius-md: calc(0.375 * var(--hem));
-  --radius-lg: calc(0.5 * var(--hem));
-  --radius-xl: calc(0.75 * var(--hem));
 }

@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import { useDebouncedCallback } from 'use-debounce'
 import defaultTheme from '@/assets/themes/default.css?raw'
 
-const themes = ['default', 'claude']
+const themes = ['default', 'neo_brutalism', 'claude']
 const STYLE_ID = 'yama-theme'
 
 export function ThemeSettings() {
@@ -86,7 +86,7 @@ export function ThemeSettings() {
             <Label className="font-bold" htmlFor="custom-theme-css">Custom CSS</Label>
           </div>
           <p className="text-muted-foreground">
-            The theme follow shadcn's design system, you can find theme from
+            The theme follow shadcn's design system, you can copy & paste themes from
             {' '}
             <a
               href="https://shadcnstudio.com/theme-generator"
@@ -97,16 +97,6 @@ export function ThemeSettings() {
               here
             </a>
             {' '}
-            and
-            {' '}
-            <a
-              href="https://www.shadcn.studio/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
-            >
-              here
-            </a>
             .
           </p>
           <Textarea

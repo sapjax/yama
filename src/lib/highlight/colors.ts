@@ -105,7 +105,6 @@ function genMarkStyles(colors: Colors, markStyle: typeof MarkStyles[number] = 't
 }
 
 function injectColors(settings: AppSettings) {
-// this styles should place outside the shadow dom
   const style = document.createElement('style')
   style.id = 'yama-style'
   style.textContent = genMarkStyles(

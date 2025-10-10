@@ -72,7 +72,7 @@ export function Options() {
               key={tabName}
               className={
                 cn(
-                  'p-4 ml-4 rounded-l-2xl',
+                  'p-4 ml-4 rounded-l-lg',
                   activeTab === tabName
                     ? 'border border-sidebar-border bg-background text-foreground -mr-[1px]'
                     : 'hover:bg-accent hover:text-accent-foreground',

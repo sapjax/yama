@@ -3,7 +3,7 @@ import { useDebounce, useDebouncedCallback } from 'use-debounce'
 import { FloatingArrow, arrow, flip, hide, offset, shift, size, useFloating, useDismiss, useInteractions, useTransitionStyles } from '@floating-ui/react'
 import { sendMessage } from 'webext-bridge/content-script'
 import { Highlighter, injectColors, initHighlighter } from '@/lib/highlight'
-import { initTheme } from '@/lib/theme'
+import { initTheme, getThemeCss } from '@/lib/theme'
 import { AppSettings, getSettings } from '@/lib/settings'
 import { DictName } from '@/lib/core/dict'
 import { Messages } from '@/lib/message'
@@ -19,16 +19,18 @@ function App() {
   const [deferredWord] = useDebounce(curWord, 300, { leading: true, trailing: true })
   const dictNames = settings?.dicts.filter(d => d.enabled).map(d => d.id as DictName) ?? []
   const highlightRef = useRef<Highlighter>(null)
+  const styleContainerRef = useRef<HTMLDivElement>(null)
 
   // Init highlighter
   useEffect(() => {
     initHighlighter().then(
       async (highlighter) => {
-        await initTheme()
         highlightRef.current = highlighter
         const settings = await getSettings()
         setSettings(settings)
         injectColors(settings)
+        // this styles should place outside the shadow dom
+        initTheme(styleContainerRef.current!)
       },
     )
 
@@ -209,54 +211,57 @@ function App() {
   }, [curWord, curRange, settings, isOpen])
 
   return (
-    <div
-      className={cn(
-        'absolute top-0 left-0 isolate z-[1000000000] w-96 rounded-lg border-2 border-border bg-card text-card-foreground shadow-xl',
-      )}
-      ref={refs.setFloating}
-      inert={!isOpen}
-      style={{
-        ...floatingStyles,
-        ...styles,
-        display: isOpen ? 'opacity-100' : 'opacity-0',
-        visibility: middlewareData.hide?.referenceHidden
-          ? 'hidden'
-          : 'visible',
-      }}
-      {...getFloatingProps()}
-      onMouseEnter={onPanelMouseEnter}
-      onMouseLeave={onPanelMouseLeave}
-      onMouseMove={onPanelMouseMove}
-    >
-      <FloatingArrow
-        ref={arrowRef}
-        context={context}
-        tipRadius={2}
-        strokeWidth={2}
-        stroke="var(--border)"
-        fill="var(--card)"
-      />
-      <div className="rounded-t-lg bg-muted/50">
-        <div className="border-b border-border p-2">
-          <div className="flex items-center justify-center">
-            <h3 className="text-base font-semibold text-foreground">{curWord}</h3>
-          </div>
-        </div>
-        {highlightRef.current && <Toolbar word={curWord} highlighter={highlightRef.current} range={curRange} />}
-      </div>
+    <>
+      <div ref={styleContainerRef}></div>
       <div
-        className="scrollbar-thin relative overflow-y-scroll p-3 pr-1.5"
-        style={{
-          maxHeight: 'min(400px, var(--available-height))',
-        }}
-        ref={containerRef}
-      >
-        {!!settings?.ai && <AiExplain word={curWord} range={curRange} ref={aiExplainRef} />}
-        {!!curWord && dictNames.map(dictName =>
-          <Dict key={dictName} word={deferredWord} dictName={dictName} />,
+        className={cn(
+          'absolute top-0 left-0 isolate z-[1000000000] w-96 rounded-lg border-2 border-border bg-muted text-card-foreground shadow-xl',
         )}
+        ref={refs.setFloating}
+        inert={!isOpen}
+        style={{
+          ...floatingStyles,
+          ...styles,
+          display: isOpen ? 'opacity-100' : 'opacity-0',
+          visibility: middlewareData.hide?.referenceHidden
+            ? 'hidden'
+            : 'visible',
+        }}
+        {...getFloatingProps()}
+        onMouseEnter={onPanelMouseEnter}
+        onMouseLeave={onPanelMouseLeave}
+        onMouseMove={onPanelMouseMove}
+      >
+        <FloatingArrow
+          ref={arrowRef}
+          context={context}
+          tipRadius={2}
+          strokeWidth={2}
+          stroke="var(--border)"
+          fill="var(--muted)"
+        />
+        <div className="rounded-t-lg bg-muted">
+          <div className="border-b border-border p-2">
+            <div className="flex items-center justify-center">
+              <h3 className="text-base font-semibold text-foreground">{curWord}</h3>
+            </div>
+          </div>
+          {highlightRef.current && <Toolbar word={curWord} highlighter={highlightRef.current} range={curRange} />}
+        </div>
+        <div
+          className="scrollbar-thin relative overflow-y-scroll p-3 pr-1.5"
+          style={{
+            maxHeight: 'min(400px, var(--available-height))',
+          }}
+          ref={containerRef}
+        >
+          {!!settings?.ai && <AiExplain word={curWord} range={curRange} ref={aiExplainRef} />}
+          {!!curWord && dictNames.map(dictName =>
+            <Dict key={dictName} word={deferredWord} dictName={dictName} />,
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

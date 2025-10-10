@@ -1,41 +1,46 @@
 import { getSettings, AppSettings, SETTINGS_KEY } from './settings'
 import defaultTheme from '@/assets/themes/default.css?raw'
 import claudeTheme from '@/assets/themes/claude.css?raw'
+import neo_brutalismTheme from '@/assets/themes/neo_brutalism.css?raw'
 
 const STYLE_ID = 'yama-theme'
 
 const themes = {
   default: defaultTheme,
   claude: claudeTheme,
+  neo_brutalism: neo_brutalismTheme,
+}
+
+function formatStyle(style: string = '') {
+  return style.replace(
+    /\:root\s*\{([\s\S]*?)\}/g,
+    `:root, :host {$1
+          }
+        `,
+  )
+    .replace(
+      /\.dark\s*\{([\s\S]*?)\}/g,
+      `@media (prefers-color-scheme: dark) {
+          :root, :host {$1
+            }
+          }`,
+    )
 }
 
 export function getThemeCss(themeSettings: AppSettings['theme']): string {
   if (themeSettings.type === 'custom') {
     const formattedStyle = themeSettings.custom
-      .replace(
-        /\:root\s*\{([\s\S]*?)\}/g,
-        `:root, :host {$1
-          }
-        `,
-      )
-      .replace(
-        /\.dark\s*\{([\s\S]*?)\}/g,
-        `@media (prefers-color-scheme: dark) {
-          :root, :host {$1
-            }
-          }`,
-      )
-    return themes.default + '\n' + formattedStyle
+    return formatStyle(themes.default + '\n' + formattedStyle)
   }
-  return themes[themeSettings.type] || themes.default
+  return formatStyle(themes[themeSettings.type] || themes.default)
 }
 
-export async function initTheme() {
+export async function initTheme(container?: HTMLElement) {
   let style = document.getElementById(STYLE_ID)
   if (!style) {
     style = document.createElement('style')
     style.id = STYLE_ID
-    document.head.appendChild(style)
+    ;(container ?? document.head).appendChild(style)
   }
 
   const settings = await getSettings()

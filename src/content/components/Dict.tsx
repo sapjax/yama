@@ -1,9 +1,9 @@
-import { use, useState, Suspense, memo, PropsWithChildren } from 'react'
+import { use, useState, Suspense, memo } from 'react'
 import { dictAdapters, DictionaryEntry, DictName } from '@/lib/core/dict'
 import { Messages } from '@/lib/message'
 import { sendMessage } from 'webext-bridge/content-script'
 import { Volume2, BookOpen, ExternalLink } from 'lucide-react'
-import clsx from 'clsx'
+import { cn } from '@/lib/utils'
 
 type DictProps = { word: string, dictName: DictName }
 
@@ -32,7 +32,7 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
 
       {data.definitions.map((def, index) => (
         <div key={`${def.spelling}_${def.reading}_${index}`} className="mb-3 last:mb-0">
-          <div className="space-y-2 rounded-md border border-border bg-muted p-2.5 text-card-foreground">
+          <div className="space-y-2 rounded-md border border-border bg-card p-2.5 text-card-foreground shadow-sm">
             {/* Spelling and Reading */}
             <div className="flex items-center">
               <div className="flex flex-wrap items-baseline gap-1.5">
@@ -63,14 +63,10 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
               {/* Tags */}
               <div className="ml-auto flex flex-wrap gap-1">
                 {!!def.jlpt && (
-                  <Badge classNames={getJLPTColor(def.jlpt)}>
-                    {def.jlpt}
-                  </Badge>
+                  <Badge text={def.jlpt} />
                 )}
                 {def.frequency && (
-                  <Badge classNames={getJLPTColor()}>
-                    {def.frequency}
-                  </Badge>
+                  <Badge text={def.frequency} />
                 )}
               </div>
             </div>
@@ -97,13 +93,13 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
             {/* Alternative Spellings */}
             {def.altSpellings && def.altSpellings.length > 0 && (
               <div className="mt-4 text-xs">
-                <table className="mt-1 w-fit border-separate border border-accent-foreground text-center text-xs text-muted-foreground">
+                <table className="mt-1 w-fit border-separate border border-muted-foreground text-center text-xs text-muted-foreground">
                   <caption className="caption-bottom p-2">Alt Spellings</caption>
                   <tbody>
                     {def.altSpellings.map((s, i) => (
                       <tr key={i}>
-                        <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground" dangerouslySetInnerHTML={{ __html: s.spelling }}></td>
-                        <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.percent}</td>
+                        <td className="border border-muted-foreground p-2 text-left text-sm whitespace-nowrap text-foreground" dangerouslySetInnerHTML={{ __html: s.spelling }}></td>
+                        <td className="border border-muted-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.percent}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -114,13 +110,13 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
             {/* Alternative Readings */}
             {def.altReadings && def.altReadings.length > 0 && (
               <div className="mt-4 text-xs">
-                <table className="mt-1 w-fit border-separate border border-accent-foreground text-center text-xs text-muted-foreground">
+                <table className="mt-1 w-fit border-separate border border-muted-foreground text-center text-xs text-muted-foreground">
                   <caption className="caption-bottom p-2">Alternative Readings</caption>
                   <tbody>
                     {def.altReadings.map((s, i) => (
                       <tr key={i}>
-                        <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.reading}</td>
-                        <td className="border border-accent-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.percent}</td>
+                        <td className="border border-muted-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.reading}</td>
+                        <td className="border border-muted-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.percent}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -211,23 +207,6 @@ const playAudio = (text: string, audioUrl?: string) => {
   sendMessage(Messages.playAudio, { text, audioUrl }, 'background')
 }
 
-const getJLPTColor = (level?: string) => {
-  switch (level) {
-    case 'N1':
-      return 'bg-red-500/20 text-red-400 border-red-500/50'
-    case 'N2':
-      return 'bg-orange-500/20 text-orange-400 border-orange-500/50'
-    case 'N3':
-      return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50'
-    case 'N4':
-      return 'bg-green-500/20 text-green-400 border-green-500/50'
-    case 'N5':
-      return 'bg-blue-500/20 text-blue-400 border-blue-500/50'
-    default:
-      return 'bg-purple-500/20 text-purple-400 border-purple-500/50'
-  }
-}
-
 function AudioButton({ spelling, audioUrls }: { spelling: string, audioUrls: string[] }) {
   const [nextAudio, setNextAudio] = useState(audioUrls[0])
 
@@ -261,7 +240,7 @@ function PitchAccents({ spelling, pitchAccents }: {
       key={accent.audioUrl}
       className="flex text-xs text-muted-foreground"
       style={{
-        '--background-color': 'var(--muted)',
+        '--background-color': 'var(--card)',
         '--pitch-high-s': 'rgb(232, 104, 123)',
         '--pitch-high-e': 'rgba(232, 104, 123, 0)',
         '--pitch-low-s': 'rgb(78, 134, 202)',
@@ -274,13 +253,41 @@ function PitchAccents({ spelling, pitchAccents }: {
   )
 }
 
-function Badge({ classNames, children }: PropsWithChildren<{ classNames?: string }>) {
+function Badge({ text = '' }: { text: string }) {
+  let level = 1
+
+  const jlptMatches = text.match(/N(\d)/)
+  if (jlptMatches) {
+    level = parseInt(jlptMatches[1])
+  } else {
+    const jpdbMatches = text.match(/Top\s+(\d+)/i)
+    if (jpdbMatches) {
+      const top = parseInt(jpdbMatches[1])
+      if (top < 1000) level = 5
+      else if (top < 2000) level = 4
+      else if (top < 3000) level = 3
+      else if (top < 8000) level = 2
+      else level = 1
+    }
+  }
+
+  // use Literal string to let tailwind generate at build time
+  const classNames = [
+    '',
+    'bg-tag-1/20 text-tag-1 border-tag-1/50',
+    'bg-tag-2/20 text-tag-2 border-tag-2/50',
+    'bg-tag-3/20 text-tag-3 border-tag-3/50',
+    'bg-tag-4/20 text-tag-4 border-tag-4/50',
+    'bg-tag-5/20 text-tag-5 border-tag-5/50',
+  ][level]
+
   return (
-    <span className={clsx(
-      'inline-flex items-center rounded-md px-1 py-0.5 text-[10px] leading-[0.9] font-medium text-nowrap', classNames,
+    <span className={cn(
+      'inline-flex items-center rounded-md px-1 py-0.5 text-[10px] leading-[0.9] font-medium text-nowrap',
+      classNames,
     )}
     >
-      {children}
+      {text}
     </span>
   )
 }

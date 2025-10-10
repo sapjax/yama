@@ -66,11 +66,11 @@ export default function Toolbar(props: ToolbarProps) {
   }
 
   return (
-    <div className="overflow-clip border-b border-primary/20 p-3 select-none">
+    <div className="overflow-clip border-b border-border p-3 select-none">
       <div className="relative flex h-5 items-center">
         <div
           ref={trackRef}
-          className="relative h-2 w-full cursor-pointer rounded-md"
+          className="relative h-2 w-full cursor-pointer rounded-full"
           style={{ background: gradientBackground }}
           onClick={handleTrackClick}
         />
