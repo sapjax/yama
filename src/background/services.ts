@@ -2,7 +2,8 @@ import { WordMarker } from '@/lib/core/mark/marker'
 import { Segmenter, LinderaSegmenter } from '@/lib/core/segment'
 import { type Dictionary, type DictName, dictAdapters } from '@/lib/core/dict'
 import { JpdbSynchronizer } from '@/lib/core/sync'
-import { OpenAiService } from '@/lib/core/ai/openai'
+import { AiServiceProxy } from '@/lib/core/ai/proxy'
+import { type AiService } from '@/lib/core/ai/interface'
 
 interface Initializable {
   init(): Promise<void>
@@ -15,7 +16,7 @@ class ServiceContainer {
   public readonly segmenter: Segmenter & Initializable
   public readonly wordMarker: WordMarker & Initializable
   public readonly jpdbSynchronizer: JpdbSynchronizer
-  public readonly aiService: OpenAiService & Initializable
+  public readonly aiService: AiService
 
   private readonly initPromises = new Map<Initializable, Promise<void>>()
 
@@ -23,7 +24,7 @@ class ServiceContainer {
     this.segmenter = new LinderaSegmenter()
     this.wordMarker = new WordMarker()
     this.jpdbSynchronizer = new JpdbSynchronizer()
-    this.aiService = new OpenAiService()
+    this.aiService = new AiServiceProxy()
   }
 
   public ensureInitialized(service: Initializable): Promise<void> {

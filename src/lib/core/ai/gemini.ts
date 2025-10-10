@@ -1,28 +1,49 @@
 import { AppSettings, getSettings } from '@/lib/settings'
 import { AiService } from './interface'
 
-export class OpenAiService implements AiService {
-  constructor(private settings: AppSettings['ai']['openai']) {}
+export class GeminiService implements AiService {
+  constructor(private settings: AppSettings['ai']['gemini']) {}
 
   async explain(sentence: string, word: string, onChunk: (chunk: string) => void, signal: AbortSignal): Promise<void> {
-    if (!this.settings?.apiKey) {
-      throw new Error('AI API key not set')
+    const { apiKey, endpoint, model, prompt } = this.settings
+    if (!apiKey) {
+      throw new Error('Gemini API key not set')
+    }
+    if (!endpoint) {
+      throw new Error('Gemini endpoint not set')
+    }
+    if (!model) {
+      throw new Error('Gemini model not set')
     }
 
-    const prompt = this.settings.prompt
+    if (!prompt) {
+      throw new Error('Gemini prompt not set')
+    }
+
+    const _prompt = prompt
       .replace('${context}', sentence)
       .replace('${word}', word)
 
-    const response = await fetch(this.settings.endpoint, {
+    // Ensure the endpoint is a streaming endpoint and request SSE
+    const url = `${endpoint}/${model}:streamGenerateContent?alt=sse&key=${apiKey}`
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.settings.apiKey}`,
       },
       body: JSON.stringify({
-        model: this.settings.model,
-        messages: [{ role: 'user', content: prompt }],
-        stream: true,
+        contents: [{
+          parts: [{
+            text: _prompt,
+          }],
+        }],
+        generationConfig: {
+          maxOutputTokens: 2048,
+          thinkingConfig: {
+            thinkingBudget: 0,
+          },
+        },
       }),
       signal,
     })
@@ -52,17 +73,18 @@ export class OpenAiService implements AiService {
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           const data = line.substring(6)
-          if (data === '[DONE]') {
-            return
-          }
           try {
             const json = JSON.parse(data)
-            const chunk = json.choices[0]?.delta?.content
+            // Extract text from Gemini's specific SSE structure
+            const chunk = json.candidates?.[0]?.content?.parts?.[0]?.text
             if (chunk) {
               onChunk(chunk)
             }
           } catch (error) {
-            console.error('Failed to parse AI stream chunk:', error)
+            // The stream can end with a final empty data chunk, which is not valid JSON
+            if (line.trim() !== 'data:') {
+              console.error('Failed to parse AI stream chunk:', data, error)
+            }
           }
         }
       }

@@ -62,7 +62,7 @@ export function ThemeSettings() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <h2 className="text-xl font-bold">Theme</h2>
       <div className="space-y-4">
         <Label className="font-bold">Select Theme</Label>

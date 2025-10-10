@@ -184,7 +184,6 @@ onMessage(Messages.ai_explain_stream_start, async ({ data, sender }) => {
   }
   currentAiStreamController = new AbortController()
 
-  await services.ensureInitialized(services.aiService)
   const { sentence, word } = data
   const tabId = sender.tabId
   if (!tabId) return

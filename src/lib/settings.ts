@@ -44,10 +44,19 @@ export interface AppSettings {
     custom: string
   }
   ai: {
-    apiKey: string
-    endpoint: string
-    model: string
-    prompt: string
+    apiType: 'openai' | 'gemini'
+    openai: {
+      apiKey: string
+      endpoint: string
+      model: string
+      prompt: string
+    }
+    gemini: {
+      apiKey: string
+      endpoint: string
+      model: string
+      prompt: string
+    }
   }
   shortcuts: {
     tracking: string
@@ -71,10 +80,19 @@ export const defaultSettings: AppSettings = {
     custom: '',
   },
   ai: {
-    apiKey: '',
-    endpoint: 'https://api.openai.com/v1/chat/completions',
-    model: '',
-    prompt: 'explain the grammar of this sentence:『 ${context}』and the meaning of the word:『 ${word}』in English.',
+    apiType: 'openai',
+    openai: {
+      apiKey: '',
+      endpoint: 'https://api.openai.com/v1/chat/completions',
+      model: '',
+      prompt: 'explain the grammar of this sentence:『 ${context}』and the word:『 ${word}』, response with English, keep simple.',
+    },
+    gemini: {
+      apiKey: '',
+      endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
+      model: 'gemini-2.5-flash-lite',
+      prompt: 'explain the grammar of this sentence:『 ${context}』and the word:『 ${word}』, response with Chinese, keep simple',
+    },
   },
   shortcuts: {
     tracking: 's',
