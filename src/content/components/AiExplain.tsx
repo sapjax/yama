@@ -77,7 +77,7 @@ export function AiExplain({ word, range, ref }: { word: string, range: Range | n
             </span>
           </div>
           {explanation && (
-            <div className="space-y-2 rounded-md border border-border bg-muted p-2.5 text-xs text-card-foreground">
+            <div className="space-y-2 rounded-md border border-border bg-card p-2.5 text-xs text-card-foreground">
               <div className="markdown-body">
                 <Markdown options={{ forceBlock: true, enforceAtxHeadings: true }}>
                   {explanation}
