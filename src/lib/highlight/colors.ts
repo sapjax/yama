@@ -61,6 +61,7 @@ function genMarkStyles(colors: Colors, markStyle: typeof MarkStyles[number] = 't
           background-color: ${color};
           text-decoration: underline;
           text-decoration-color: ${textColor};
+          text-decoration-thickness: 2px;
         }
       `,
         'text': `
@@ -72,30 +73,35 @@ function genMarkStyles(colors: Colors, markStyle: typeof MarkStyles[number] = 't
         ::highlight(${hlKey}) {
           text-decoration: underline;
           text-decoration-color: ${color};
+          text-decoration-thickness: 2px;
         }
       `,
         'double-underline': `
         ::highlight(${hlKey}) {
           text-decoration: underline double;
           text-decoration-color: ${color};
+          text-decoration-thickness: 2px;
         }
       `,
         'wavy': `
         ::highlight(${hlKey}) {
           text-decoration: underline wavy;
           text-decoration-color: ${color};
+          text-decoration-thickness: 2px;
         }
       `,
         'dotted': `
         ::highlight(${hlKey}) {
           text-decoration: underline dotted;
           text-decoration-color: ${color};
+          text-decoration-thickness: 2px;
         }
       `,
         'dashed': `
         ::highlight(${hlKey}) {
           text-decoration: underline dashed;
           text-decoration-color: ${color};
+          text-decoration-thickness: 2px;
         }
       `,
       }

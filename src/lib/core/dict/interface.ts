@@ -4,7 +4,7 @@ export type DictionaryEntry = {
   definitions: Definition[]
 }
 
-type Definition = {
+export type Definition = {
   spelling: string
   reading: string
   audioUrls?: string[]
@@ -14,6 +14,7 @@ type Definition = {
   altReadings?: { reading: string, percent?: string }[]
   pos?: string
   pitchAccents?: { audioUrl: string, html: string }[]
+  conjugation?: { link: string, info: string }
   examples?: Example[]
   jlpt?: JLPTLevel
 }

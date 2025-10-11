@@ -1,5 +1,5 @@
 import { DomParser } from '@thednp/domparser/dom-parser'
-import { Dictionary, DictionaryEntry } from '../interface'
+import type { Dictionary, Definition, DictionaryEntry } from '../interface'
 import { abortable, cacheable } from '../fetcher'
 
 // https://jisho.org/api/v1/search/words?keyword=%E9%A3%9F%E3%81%B9%E3%82%8B
@@ -27,7 +27,25 @@ const parseDocument = async (word: string, html: string) => {
     const isKanji = root.getAttribute('class')?.includes('kanji')
     if (!isKanji) {
     // example: https://jpdb.io/search?q=%E8%89%B2
-      const reading = root.querySelector('.primary-spelling')?.querySelectorAll('rt')?.map(rt => rt.textContent).join()
+      let reading = ''
+      root.querySelector('.primary-spelling')?.querySelectorAll('rt')?.forEach((rt) => {
+        reading += rt.textContent
+        rt.remove()
+      })
+      const spelling = root.querySelector('.primary-spelling')?.textContent
+
+      let conjugation: Definition['conjugation']
+      const a = root.querySelector('.what-is-this')
+      if (a && (a.getAttribute('href')?.indexOf('conjugation') ?? -1) > 0) {
+        const conjugateLink = 'https://jpdb.io' + a!.getAttribute('href')!
+        const parent = a?.parentElement
+        a?.remove()
+        conjugation = {
+          link: conjugateLink,
+          info: parent?.textContent?.replace('&nbsp;', ' ') ?? '',
+        }
+      }
+
       const frequency = [...root.querySelectorAll('.tag')].map(n => n.textContent).find(t => t.startsWith('Top'))
       const meanings = [...root.querySelectorAll('.description')].map(
         (node) => {
@@ -69,12 +87,13 @@ const parseDocument = async (word: string, html: string) => {
       }
 
       return {
-        spelling: word,
+        spelling,
         reading: reading ?? '',
         frequency,
         meanings,
         audioUrls,
         altSpellings,
+        conjugation,
         pitchAccents,
       }
     } else if (isKanji) {

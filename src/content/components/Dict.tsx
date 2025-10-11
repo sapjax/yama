@@ -2,7 +2,7 @@ import { use, useState, Suspense, memo } from 'react'
 import { dictAdapters, DictionaryEntry, DictName } from '@/lib/core/dict'
 import { Messages } from '@/lib/message'
 import { sendMessage } from 'webext-bridge/content-script'
-import { Volume2, BookOpen, ExternalLink } from 'lucide-react'
+import { Volume2, BookOpen, ExternalLink, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type DictProps = { word: string, dictName: DictName }
@@ -70,6 +70,18 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
                 )}
               </div>
             </div>
+
+            {def.conjugation && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>{def.conjugation.info}</span>
+                <a href={def.conjugation.link} target="_black">
+                  <Info
+                    size="14"
+                    className="text-muted-foreground transition-all hover:text-accent-foreground"
+                  />
+                </a>
+              </div>
+            )}
 
             {/* Meanings */}
             <div>
