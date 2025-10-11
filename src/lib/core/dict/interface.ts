@@ -12,9 +12,15 @@ export type Definition = {
   meanings: { explain: string, note?: string }[]
   altSpellings?: { spelling: string, percent?: string, furigana?: string }[]
   altReadings?: { reading: string, percent?: string }[]
-  pos?: string
   pitchAccents?: { audioUrl: string, html: string }[]
-  conjugation?: { link: string, info: string }
+  pos?: string
+  conjugation?: {
+    link: string
+    info?: {
+      link: string
+      text: string
+    }
+  }
   examples?: Example[]
   jlpt?: JLPTLevel
 }

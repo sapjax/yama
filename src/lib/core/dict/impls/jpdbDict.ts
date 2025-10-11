@@ -34,18 +34,29 @@ const parseDocument = async (word: string, html: string) => {
       })
       const spelling = root.querySelector('.primary-spelling')?.textContent
 
+      // conjugation
       let conjugation: Definition['conjugation']
-      const a = root.querySelector('.what-is-this')
-      if (a && (a.getAttribute('href')?.indexOf('conjugation') ?? -1) > 0) {
-        const conjugateLink = 'https://jpdb.io' + a!.getAttribute('href')!
-        const parent = a?.parentElement
-        a?.remove()
+      const allLink = root.querySelector('.view-conjugations-link')?.getAttribute('href')
+      if (allLink) {
         conjugation = {
-          link: conjugateLink,
-          info: parent?.textContent?.replace('&nbsp;', ' ') ?? '',
+          link: 'https://jpdb.io' + allLink,
+        }
+        const infoLink = root.querySelector('.what-is-this')
+        if (infoLink && (infoLink.getAttribute('href')?.indexOf('conjugation') ?? -1) > 0) {
+          const conjugateLink = 'https://jpdb.io' + infoLink!.getAttribute('href')!
+          const parent = infoLink?.parentElement
+          infoLink?.remove()
+          conjugation.info = {
+            link: conjugateLink,
+            text: parent?.textContent?.replace('&nbsp;', ' ') ?? '',
+          }
         }
       }
 
+      // part-of-speech
+      const pos = root.querySelector('.part-of-speech')?.textContent
+
+      // frequency
       const frequency = [...root.querySelectorAll('.tag')].map(n => n.textContent).find(t => t.startsWith('Top'))
       const meanings = [...root.querySelectorAll('.description')].map(
         (node) => {
@@ -60,6 +71,7 @@ const parseDocument = async (word: string, html: string) => {
         },
       )
 
+      // audioUrls
       const audioUrls = root.querySelector('.vocabulary-audio')
         ?.getAttribute('data-audio')?.split(',')
         .map(url => 'https://jpdb.io/static/v/' + url)
@@ -72,6 +84,7 @@ const parseDocument = async (word: string, html: string) => {
         }
       })
 
+      // pitchAccent
       const pitchAccent = root.querySelector('.subsection-pitch-accent')
       const pitchAccentAudios = pitchAccent?.querySelectorAll('.vocabulary-audio')
       let pitchAccents
@@ -94,6 +107,7 @@ const parseDocument = async (word: string, html: string) => {
         audioUrls,
         altSpellings,
         conjugation,
+        pos,
         pitchAccents,
       }
     } else if (isKanji) {

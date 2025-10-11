@@ -71,15 +71,31 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
               </div>
             </div>
 
-            {def.conjugation && (
+            {!!def.conjugation?.info && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{def.conjugation.info}</span>
-                <a href={def.conjugation.link} target="_black">
+                <span>{def.conjugation.info.text}</span>
+                <a href={def.conjugation.info.link} target="_black">
                   <Info
-                    size="14"
+                    size="12"
                     className="text-muted-foreground transition-all hover:text-accent-foreground"
                   />
                 </a>
+              </div>
+            )}
+
+            {!!def.pos && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {def.conjugation?.link
+                  ? (
+                    <a href={def.conjugation?.link} target="_black" className="inline-flex items-center gap-2 text-muted-foreground transition-all hover:text-accent-foreground hover:underline">
+                      <span>{def.pos}</span>
+                      <ExternalLink
+                        size="12"
+                        color="currentColor"
+                      />
+                    </a>
+                  )
+                  : <span>{def.pos}</span>}
               </div>
             )}
 
