@@ -36,13 +36,15 @@ const parseDocument = async (word: string, html: string) => {
 
       // conjugation
       let conjugation: Definition['conjugation']
-      const allLink = root.querySelector('.view-conjugations-link')?.getAttribute('href')
+      const allLink = root.querySelectorAll('.view-conjugations-link').find(
+        a => a.getAttribute('href')?.includes('conjugate'),
+      )
       if (allLink) {
         conjugation = {
-          link: 'https://jpdb.io' + allLink,
+          link: 'https://jpdb.io' + allLink.getAttribute('href'),
         }
         const infoLink = root.querySelector('.what-is-this')
-        if (infoLink && (infoLink.getAttribute('href')?.indexOf('conjugation') ?? -1) > 0) {
+        if (infoLink && infoLink.getAttribute('href')?.includes('conjugation')) {
           const conjugateLink = 'https://jpdb.io' + infoLink!.getAttribute('href')!
           const parent = infoLink?.parentElement
           infoLink?.remove()
