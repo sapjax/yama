@@ -1,4 +1,3 @@
-export { updateIconBadge } from './icon'
 export { cn } from './className'
 export { getSentenceFromRange } from './dom'
-export { getThemeMode } from './theme'
+export { listenColorSchemeChange } from './colorScheme'

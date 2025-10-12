@@ -1,10 +1,10 @@
 import { Messages, sendMessageToAllTabs } from '@/lib/message'
-import { updateIconBadge } from '@/lib/utils'
 import { onMessage, sendMessage } from 'webext-bridge/background'
 import { services } from '@/background/services'
 import { getSettings, updateSettings } from '@/lib/settings'
-import { getWhitelist, isDomainWhitelisted, removeFromWhitelist, addToWhitelist } from '@/lib/whitelist'
-import { playAudio } from '@/background/audio'
+import { getWhitelist, isUrlWhitelisted, isDomainWhitelisted, removeFromWhitelist, addToWhitelist } from '@/lib/whitelist'
+import { updateIcon, setIconBadgeCounting, setIconBadgeError, clearIconBadge } from './icon'
+import { playAudio } from './audio'
 // @ts-ignore
 import contentScriptPath from '@/content/main?script'
 
@@ -36,7 +36,7 @@ async function initialize() {
   }
 
   // Set initial badge count
-  updateIconBadge(services.wordMarker.countLearningWords())
+  setIconBadgeCounting(services.wordMarker.getCounting())
 }
 
 initialize()
@@ -67,13 +67,8 @@ chrome.runtime.onInstalled.addListener(async () => {
   const tabs = await chrome.tabs.query({ status: 'complete' })
   for (const tab of tabs) {
     if (tab.id && tab.url) {
-      try {
-        const url = new URL(tab.url)
-        if (await isDomainWhitelisted(url.hostname || url.pathname)) {
-          await injectScriptIntoTab(tab.id)
-        }
-      } catch (e) {
-        // Ignore invalid URLs
+      if (await isUrlWhitelisted(tab.url)) {
+        await injectScriptIntoTab(tab.id)
       }
     }
   }
@@ -81,15 +76,14 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.url) {
-    try {
-      const url = new URL(tab.url)
-      if (await isDomainWhitelisted(url.hostname || url.pathname)) {
-        await injectScriptIntoTab(tabId)
-      }
-    } catch (e) {
-      // Ignore invalid URLs
+    if (await isUrlWhitelisted(tab.url)) {
+      await injectScriptIntoTab(tabId)
     }
   }
+})
+
+chrome.tabs.onActivated.addListener(function ({ tabId }) {
+  updateTabBadge(tabId)
 })
 
 // --- Message Listeners ---
@@ -99,7 +93,7 @@ onMessage(Messages.mark_word, async ({ data }) => {
   services.wordMarker.set(spelling, status, sentence)
   // The 'wordChanged' event will be emitted by the marker, triggering sync if active.
   sendMessageToAllTabs(Messages.mark_word, data)
-  updateIconBadge(services.wordMarker.countLearningWords())
+  setIconBadgeCounting(services.wordMarker.getCounting())
 })
 
 onMessage(Messages.get_marked_words, async () => {
@@ -154,12 +148,6 @@ onMessage(Messages.jpdb_sync, async () => {
   }
 })
 
-onMessage(Messages.get_tab_whitelist_status, async ({ data }) => {
-  const { domain } = data
-  if (!domain) return false
-  return await isDomainWhitelisted(domain)
-})
-
 onMessage(Messages.toggle_whitelist_status, async ({ data }) => {
   const { domain, tabId } = data
   if (!domain || !tabId) return
@@ -167,13 +155,12 @@ onMessage(Messages.toggle_whitelist_status, async ({ data }) => {
   const isWhitelisted = await isDomainWhitelisted(domain)
   if (isWhitelisted) {
     await removeFromWhitelist(domain)
-    // Reload the tab to remove the content script
     chrome.tabs.reload(tabId)
   } else {
     await addToWhitelist(domain)
-    // Inject the script immediately after whitelisting
     await injectScriptIntoTab(tabId)
   }
+  updateTabBadge(tabId)
 })
 
 let currentAiStreamController: AbortController | null = null
@@ -214,6 +201,21 @@ onMessage(Messages.ai_explain_stream_cancel, () => {
   }
 })
 
-onMessage(Messages.set_theme, async ({ data }) => {
-  updateIconBadge(services.wordMarker.countLearningWords(), data.theme)
+onMessage(Messages.set_color_scheme, async ({ data }) => {
+  updateIcon(data.colorScheme)
+  setIconBadgeCounting(services.wordMarker.getCounting())
 })
+
+function updateTabBadge(tabId: number) {
+  chrome.tabs.get(tabId, async function (tab) {
+    if (await isUrlWhitelisted(tab.url!)) {
+      if (chrome.runtime.lastError) {
+        setIconBadgeError(chrome.runtime.lastError.message!)
+      } else {
+        setIconBadgeCounting(services.wordMarker.getCounting())
+      }
+    } else {
+      clearIconBadge()
+    }
+  })
+}

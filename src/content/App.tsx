@@ -3,11 +3,11 @@ import { useDebounce, useDebouncedCallback } from 'use-debounce'
 import { FloatingArrow, arrow, flip, hide, offset, shift, size, useFloating, useDismiss, useInteractions, useTransitionStyles } from '@floating-ui/react'
 import { sendMessage } from 'webext-bridge/content-script'
 import { Highlighter, injectColors, initHighlighter } from '@/lib/highlight'
-import { initTheme, getThemeCss } from '@/lib/theme'
+import { initTheme } from '@/lib/theme'
 import { AppSettings, getSettings } from '@/lib/settings'
 import { DictName } from '@/lib/core/dict'
 import { Messages } from '@/lib/message'
-import { getThemeMode, cn } from '@/lib/utils'
+import { listenColorSchemeChange, cn } from '@/lib/utils'
 import Dict from './components/Dict'
 import Toolbar from './components/Toolbar'
 import { AiExplain, AiExplainHandler } from './components/AiExplain'
@@ -34,7 +34,9 @@ function App() {
       },
     )
 
-    sendMessage(Messages.set_theme, { theme: getThemeMode() }, 'background')
+    listenColorSchemeChange((colorScheme) => {
+      sendMessage(Messages.set_color_scheme, { colorScheme }, 'background')
+    })
   }, [])
 
   // panel status and styles

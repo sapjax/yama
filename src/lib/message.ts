@@ -16,9 +16,8 @@ declare module 'webext-bridge' {
     [Messages.jpdb_login]: ProtocolWithReturn<{ apiKey: string }, boolean>
     [Messages.jpdb_sync]: {}
     [Messages.jpdb_get_decks]: ProtocolWithReturn<{}, Deck[]>
-    [Messages.get_tab_whitelist_status]: ProtocolWithReturn<{ domain: string }, boolean>
     [Messages.toggle_whitelist_status]: { domain: string, tabId: number }
-    [Messages.set_theme]: { theme: 'light' | 'dark' }
+    [Messages.set_color_scheme]: { colorScheme: 'light' | 'dark' }
 
     // AI streaming
     [Messages.ai_explain_stream_start]: { sentence: string, word: string }
@@ -46,9 +45,8 @@ const enum Messages {
   jpdb_login = 'jpdb-login',
   jpdb_sync = 'jpdb-sync',
   jpdb_get_decks = 'jpdb_get_decks',
-  get_tab_whitelist_status = 'get_tab_whitelist_status',
   toggle_whitelist_status = 'toggle_whitelist_status',
-  set_theme = 'set_theme',
+  set_color_scheme = 'set_color_scheme',
 
   ai_explain_stream_start = 'ai_explain_stream_start',
   ai_explain_stream_chunk = 'ai_explain_stream_chunk',

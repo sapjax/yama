@@ -73,10 +73,13 @@ class WordMarker {
     return this.markedWords
   }
 
-  countLearningWords(): number {
-    return [...this.markedWords.values()]
-      .filter(word => ['Tracking', 'Never_Forget'].includes(word.status))
-      .length
+  getCounting(): Record<WordStatus, number> {
+    const stats = {} as Record<WordStatus, number>
+    for (const vocabulary of this.markedWords.values()) {
+      stats[vocabulary.status] ||= 0
+      stats[vocabulary.status]++
+    }
+    return stats
   }
 }
 

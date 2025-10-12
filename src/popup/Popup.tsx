@@ -4,6 +4,7 @@ import { Switch } from '@/components/ui/switch'
 import { sendMessage } from 'webext-bridge/popup'
 import { Messages, WordStatistics } from '@/lib/message'
 import { AppSettings, getSettings } from '@/lib/settings'
+import { isUrlWhitelisted, getUrlDomain } from '@/lib/whitelist'
 import { StatisticsChart } from './StatisticsChart'
 
 import { Settings } from 'lucide-react'
@@ -23,12 +24,11 @@ function Popup() {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
       if (tab?.url && tab.id) {
         try {
-          const url = new URL(tab.url)
-          const domain = url.hostname || url.pathname
+          const domain = getUrlDomain(tab.url)
           setCurrentDomain(domain)
           setCurrentTabId(tab.id)
 
-          const isWhitelisted = await sendMessage(Messages.get_tab_whitelist_status, { domain }, 'background')
+          const isWhitelisted = await isUrlWhitelisted(tab.url)
           setIsWhitelisted(isWhitelisted)
           setIsLoading(false)
 

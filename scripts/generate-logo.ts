@@ -1,7 +1,7 @@
 import { createCanvas } from 'canvas'
 import * as fs from 'fs'
 import * as path from 'path'
-import { drawIcon } from '../src/lib/utils/icon'
+import { drawIcon } from '../src/background/icon'
 
 function generateIcon(size: number) {
   const canvas = createCanvas(size, size)
