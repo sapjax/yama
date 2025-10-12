@@ -1,5 +1,5 @@
-import { WordStatus } from '@/lib/core/mark'
-import type { ColorScheme } from '../lib/utils/colorScheme'
+import type { WordStatus } from '@/lib/core/mark'
+import type { ColorScheme } from '@/lib/utils/colorScheme'
 
 const colors = {
   light: {
