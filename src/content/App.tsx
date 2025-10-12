@@ -99,8 +99,15 @@ function App() {
   const stayEnoughDebounce = useDebouncedCallback(onStayEnough, 5000)
 
   useEffect(() => {
-    isOpen ? stayEnoughDebounce() : stayEnoughDebounce.cancel()
-  }, [isOpen, stayEnoughDebounce])
+    if (isOpen) {
+      const status = highlightRef.current?.getWordStatus(curWord)
+      if (status === 'UnSeen') {
+        stayEnoughDebounce()
+      }
+    } else {
+      stayEnoughDebounce.cancel()
+    }
+  }, [isOpen, stayEnoughDebounce, curWord])
 
   // panel open status
   const hideDelay = useDebouncedCallback(useCallback(() => {
@@ -118,6 +125,7 @@ function App() {
   }
 
   const updateWord = useCallback((spelling: string, range: Range, rect: DOMRect) => {
+    stayEnoughDebounce.cancel()
     setCurWord(spelling)
     setCurRange(range)
     refs.setPositionReference({
@@ -125,7 +133,7 @@ function App() {
     })
     hideDelay.cancel()
     showDelay()
-  }, [refs, hideDelay, showDelay])
+  }, [refs, hideDelay, showDelay, stayEnoughDebounce])
 
   const updateWordDebounce = useDebouncedCallback(updateWord, 200)
 

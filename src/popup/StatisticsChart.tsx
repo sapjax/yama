@@ -53,7 +53,7 @@ export function StatisticsChart({ stats, settings }: StatisticsChartProps) {
               </TooltipTrigger>
               <TooltipContent>
                 <p>
-                  {status}
+                  {status.replace('_', ' ')}
                   :
                   {' '}
                   {count}
