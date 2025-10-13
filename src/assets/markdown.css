@@ -63,7 +63,7 @@
 
 	code {
 		font-family: monospace;
-		background-color: var(--secondary);
+		background-color: var(--muted);
 		padding: 2px 4px;
 		border-radius: 3px;
 	}
