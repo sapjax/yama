@@ -1,7 +1,7 @@
 import type { Dictionary, DictionaryEntry } from '../interface'
 import { abortable, cacheable } from '../fetcher'
 
-// https://jisho.org/api/v1/search/words?keyword=%E9%A3%9F%E3%81%B9%E3%82%8B
+// https://app.kumalearn.com/dictionary/%E9%A3%9F%E3%81%B9%E3%82%8B
 const _fetch = async (word: string, signal: AbortSignal): Promise<DictionaryEntry | null> => {
   try {
     const response = await fetch(`https://app.kumalearn.com/dictionary/${encodeURIComponent(word)}`, { signal })

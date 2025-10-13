@@ -15,7 +15,7 @@ Like LingQ、Migaku、relingo、trancy, but free and open source.
 
 *   **Instant Dictionary Lookup**: Hover over any Japanese word to see its definition, reading. Supports multiple dictionary sources.
     *   *JPDB*
-    *   *Jisho*
+    *   *kuma learn*
 
 *   **Word Tracking**: By default all words are `UnSeen`, You can mark words as `Tracking`, `Ignored`, or `Never Forget`. Yama highlights words with different colors, giving you a clear overview of your vocabulary.
 

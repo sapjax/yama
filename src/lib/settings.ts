@@ -1,3 +1,5 @@
+import { dictAdapters } from '@/lib/core/dict'
+
 export const SETTINGS_KEY = 'yama-app-settings'
 
 export const defaultColors = {
@@ -27,9 +29,7 @@ export type DictSettings = DictSettingItem[]
 
 const defaultDictSettings: DictSettings = [
   { id: 'jpdb', enabled: true },
-  { id: 'jisho', enabled: false },
-  { id: 'jlpt', enabled: false },
-  { id: 'kuma', enabled: true },
+  { id: 'kuma', enabled: false },
 ]
 
 export interface AppSettings {
@@ -105,37 +105,32 @@ export const defaultSettings: AppSettings = {
 }
 
 /**
- * Merges saved settings with defaults to ensure all keys are present and in a consistent order.
+ * Merges saved settings with defaults, synchronizes with available dictionaries,
+ * and ensures all keys are present.
  */
 export const getSettings = async (): Promise<AppSettings> => {
   try {
     const data = await chrome.storage.sync.get(SETTINGS_KEY)
     const savedSettings = data[SETTINGS_KEY] as Partial<AppSettings> | undefined
 
-    if (savedSettings?.dicts) {
-      const savedDictsMap = new Map(savedSettings.dicts.map(d => [d.id, d]))
+    const availableDictIds = Object.keys(dictAdapters)
+    const userDicts = savedSettings?.dicts || defaultSettings.dicts
+    const validUserDicts = userDicts.filter(d => availableDictIds.includes(d.id))
 
-      // Ensure the order from saved settings is respected, while adding any new default dictionaries
-      const finalDicts = [...savedSettings.dicts]
-      const finalDictIds = new Set(finalDicts.map(d => d.id))
-      defaultSettings.dicts.forEach((defaultDict) => {
-        if (!finalDictIds.has(defaultDict.id)) {
-          finalDicts.push(defaultDict)
-        }
-      })
+    // Identify new dicts that are in the code but not in user settings yet.
+    const userDictIds = new Set(validUserDicts.map(d => d.id))
+    const newDicts = availableDictIds
+      .filter(id => !userDictIds.has(id))
+      .map(id => ({ id, enabled: false })) // Add new dicts as disabled by default.
 
-      savedSettings.dicts = finalDicts.map(d => ({
-        ...d,
-        enabled: savedDictsMap.get(d.id)?.enabled ?? d.enabled,
-      }))
-    }
+    const finalDicts = [...validUserDicts, ...newDicts]
 
     return {
       ...defaultSettings,
       ...savedSettings,
       colors: { ...defaultSettings.colors, ...savedSettings?.colors },
       reviewColors: { ...defaultSettings.reviewColors, ...savedSettings?.reviewColors },
-      dicts: savedSettings?.dicts || defaultSettings.dicts,
+      dicts: finalDicts,
     }
   } catch (error) {
     console.error('Error getting settings:', error)
@@ -150,9 +145,13 @@ export const updateSettings = async (newSettings: Partial<AppSettings>): Promise
       ...currentSettings,
       ...newSettings,
       colors: { ...currentSettings.colors, ...(newSettings.colors || {}) },
-      // For dicts, directly replace the array if it exists in the new settings
       dicts: newSettings.dicts || currentSettings.dicts,
     }
+
+    //  ensure that only valid dictionaries are ever written to storage.
+    const availableDictIds = Object.keys(dictAdapters)
+    mergedSettings.dicts = mergedSettings.dicts.filter(d => availableDictIds.includes(d.id))
+
     await chrome.storage.sync.set({ [SETTINGS_KEY]: mergedSettings })
   } catch (error) {
     console.error('Error updating settings:', error)
