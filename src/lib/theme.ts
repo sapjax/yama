@@ -42,7 +42,6 @@ function formatStyle(style: string = '') {
 export function getThemeCss(themeSettings: AppSettings['theme']): string {
   if (themeSettings.type === 'custom') {
     const formattedStyle = themeSettings.custom
-    console.log(formatStyle(formattedStyle))
     return formatStyle(themes.default + '\n' + formattedStyle)
   }
   return formatStyle(themes[themeSettings.type] || themes.default)

@@ -29,6 +29,7 @@ const defaultDictSettings: DictSettings = [
   { id: 'jpdb', enabled: true },
   { id: 'jisho', enabled: false },
   { id: 'jlpt', enabled: false },
+  { id: 'kuma', enabled: true },
 ]
 
 export interface AppSettings {

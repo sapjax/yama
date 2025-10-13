@@ -10,7 +10,6 @@ type DictProps = { word: string, dictName: DictName }
 const Dict = memo(function Dict({ word, dictName }: DictProps) {
   const lookupPromise = lookup(word, dictName)
 
-  console.log(word)
   if (!word) return null
 
   return (
@@ -36,7 +35,8 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
             {/* Spelling and Reading */}
             <div className="flex items-center">
               <div className="flex flex-wrap items-baseline gap-1.5">
-                <span className="text-base font-medium text-foreground">{def.spelling}</span>
+                {!!def.spelling
+                  && <span className="text-base font-medium text-foreground">{def.spelling}</span>}
                 {def.pitchAccents && def.pitchAccents.length > 0
                   ? (
                     <PitchAccents
@@ -117,6 +117,25 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
                 ))}
               </ul>
             </div>
+
+            {/* Images  */}
+            {def.images && def.images.length > 0 && (
+              <div className="space-y-2">
+                {def.images.map(img => (
+                  <div className="space-y-1.5" key={img.src}>
+                    <img
+                      src={img.src}
+                      className=""
+                      alt={img.alt ?? ''}
+                      loading="lazy"
+                      width={img.width}
+                      height={img.height}
+                    />
+                    {img.alt && <div className="text-center text-xs text-muted-foreground">{img.alt}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Alternative Spellings */}
             {def.altSpellings && def.altSpellings.length > 0 && (
@@ -217,7 +236,7 @@ function DictTitle({ word, dictName }: DictProps) {
 function DictLoading({ word, dictName }: DictProps) {
   return (
     <>
-      <div className="flex flex-1 flex-col gap-2">
+      <div className="mb-4 flex flex-1 flex-col gap-2 last:mb-0">
         <DictTitle word={word} dictName={dictName} />
         <div className="space-y-2 rounded-md border border-border bg-card p-2.5  text-card-foreground shadow-sm">
           <div className="h-5 w-32 animate-pulse rounded-md bg-muted"></div>

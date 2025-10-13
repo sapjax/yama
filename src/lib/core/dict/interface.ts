@@ -22,6 +22,12 @@ export type Definition = {
     }
   }
   examples?: Example[]
+  images?: {
+    src: string
+    alt?: string
+    width: number
+    height: number
+  }[]
   jlpt?: JLPTLevel
 }
 

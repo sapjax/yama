@@ -4,13 +4,18 @@ import { abortable, cacheable } from '../fetcher'
 
 // https://jisho.org/api/v1/search/words?keyword=%E9%A3%9F%E3%81%B9%E3%82%8B
 const _fetchJPDB = async (word: string, signal: AbortSignal): Promise<DictionaryEntry | null> => {
-  const response = await fetch(`https://jpdb.io/search?q=${encodeURIComponent(word)}`, { signal })
-  if (!response.ok) {
-    throw new Error(`Failed to fetch from JPDB API: ${response.statusText}`)
-  }
+  try {
+    const response = await fetch(`https://jpdb.io/search?q=${encodeURIComponent(word)}`, { signal })
+    if (!response.ok) {
+      throw new Error(`Failed to fetch from JPDB API: ${response.statusText}`)
+    }
 
-  const html = await response.text()
-  return parseDocument(word, html)
+    const html = await response.text()
+    const res = parseDocument(word, html)
+    return res
+  } catch (e) {
+    return null
+  }
 }
 
 const parseDocument = async (word: string, html: string) => {
