@@ -52,7 +52,7 @@ class LinderaSegmenter implements Segmenter {
         isWordLike: token.partOfSpeech !== '記号',
       }))
 
-      const processedTokens = options?.mergeTokens ? mergeTokens(unmergedTokens) : unmergedTokens
+      const processedTokens = mergeTokens(unmergedTokens)
       const filteredTokens = processedTokens.filter(t => !!t.baseForm && t.isWordLike)
 
       return filteredTokens

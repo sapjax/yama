@@ -11,12 +11,14 @@ import { listenColorSchemeChange, cn } from '@/lib/utils'
 import Dict from './components/Dict'
 import Toolbar from './components/Toolbar'
 import { AiExplain, AiExplainHandler } from './components/AiExplain'
+import { SegmentedToken } from '@/lib/core/segment'
 
 function App() {
   const [curWord, setCurWord] = useState('')
+  const [surfaceForm, setSurfaceForm] = useState('')
   const [curRange, setCurRange] = useState<Range | null>(null)
   const [settings, setSettings] = useState<AppSettings>()
-  const [deferredWord] = useDebounce(curWord, 300, { leading: true, trailing: true })
+  const [deferredWord] = useDebounce(surfaceForm, 300, { leading: true, trailing: true })
   const dictNames = settings?.dicts.filter(d => d.enabled).map(d => d.id as DictName) ?? []
   const highlightRef = useRef<Highlighter>(null)
   const styleContainerRef = useRef<HTMLDivElement>(null)
@@ -124,9 +126,10 @@ function App() {
     hideDelay.cancel()
   }
 
-  const updateWord = useCallback((spelling: string, range: Range, rect: DOMRect) => {
+  const updateWord = useCallback((segment: SegmentedToken, range: Range, rect: DOMRect) => {
     stayEnoughDebounce.cancel()
-    setCurWord(spelling)
+    setCurWord(segment.baseForm)
+    setSurfaceForm(segment.surfaceForm)
     setCurRange(range)
     refs.setPositionReference({
       getBoundingClientRect: () => rect,
@@ -145,12 +148,15 @@ function App() {
     const { range, rect } = highlighter.getRangeAtPoint(e) ?? {}
 
     if (range && rect) {
-      const baseForm = highlighter.getBaseFormByRange(range)
-      if (baseForm) {
+      const segment = highlighter.getSegmentByRange(range)
+      if (segment) {
         if (isOpen) {
-          updateWordDebounce(baseForm, range, rect)
+          updateWordDebounce(segment, range, rect)
         } else {
-          updateWord(baseForm, range, rect)
+          updateWord(segment, range, rect)
+        }
+      } else {
+        if (isOpen) {
         }
       }
     } else {
@@ -275,7 +281,7 @@ function App() {
         >
           {!!settings?.ai && <AiExplain word={curWord} range={curRange} ref={aiExplainRef} />}
           {!!curWord && dictNames.map(dictName =>
-            <Dict key={dictName} word={deferredWord} dictName={dictName} />,
+            <Dict key={dictName} word={surfaceForm} dictName={dictName} />,
           )}
         </div>
       </div>

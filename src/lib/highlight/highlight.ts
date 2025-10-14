@@ -10,7 +10,7 @@ class Highlighter {
   private segmentFn: (input: string) => Promise<SegmentedToken[]>
   private markedWords: MarkedWordsMap = new Map()
   private highlights = new Map<ColorKey, Highlight>()
-  private wordToBaseFormMap = new Map<string, string>()
+  private wordToSegmentMap = new Map<string, SegmentedToken>()
   private highlightContainerMap = new WeakMap<Node, Set<Range>>()
   private listeners = new Set<() => void>()
 
@@ -111,7 +111,7 @@ class Highlighter {
         range.setStart(node, segment.startIndex)
         range.setEnd(node, segment.endIndex)
 
-        this.wordToBaseFormMap.set(range.toString(), segment.baseForm)
+        this.wordToSegmentMap.set(range.toString(), segment)
         this.cacheNodeRanges(pNode, range)
       }
     }
@@ -212,7 +212,7 @@ class Highlighter {
         range.setStart(startNode, startPos)
         range.setEnd(endNode, endPos)
 
-        this.wordToBaseFormMap.set(range.toString(), segment.baseForm)
+        this.wordToSegmentMap.set(range.toString(), segment)
         this.cacheNodeRanges(node, range)
       }
     }
@@ -227,7 +227,7 @@ class Highlighter {
   private paintNodeRanges(node: Node) {
     let rangesSet = this.highlightContainerMap.get(node) ?? new Set<Range>()
     for (const range of rangesSet) {
-      const colorKey = this.getColorKey(this.getBaseFormByRange(range) ?? '')
+      const colorKey = this.getColorKey(this.getSegmentByRange(range)?.baseForm ?? '')
       this.highlights.get(colorKey)?.add(range)
     }
   }
@@ -235,19 +235,19 @@ class Highlighter {
   private clearNodeRanges(node: Node, detach = false) {
     let rangesSet = this.highlightContainerMap.get(node) ?? new Set<Range>()
     for (const range of rangesSet) {
-      const colorKey = this.getColorKey(this.getBaseFormByRange(range) ?? '')
+      const colorKey = this.getColorKey(this.getSegmentByRange(range)?.baseForm ?? '')
       this.highlights.get(colorKey)?.delete(range)
       detach && this.detachRange(range)
     }
   }
 
   private detachRange(range: Range) {
-    this.wordToBaseFormMap.delete(range.toString())
+    this.wordToSegmentMap.delete(range.toString())
     range.detach()
   }
 
-  public getBaseFormByRange(range: Range) {
-    return this.wordToBaseFormMap.get(range.toString())
+  public getSegmentByRange(range: Range) {
+    return this.wordToSegmentMap.get(range.toString())
   }
 
   public getRangeAtPoint(e: MouseEvent) {
@@ -357,8 +357,8 @@ class Highlighter {
         Ignored: 0,
         Never_Forget: 0,
       }
-      this.wordToBaseFormMap.forEach((baseForm) => {
-        const status = this.getWordStatus(baseForm)
+      this.wordToSegmentMap.forEach((segment) => {
+        const status = this.getWordStatus(segment.baseForm)
         if (status in stats) {
           stats[status]++
         }
@@ -403,7 +403,7 @@ class Highlighter {
     this.highlights.forEach((hl, colorKey) => {
       if (newColorKey !== colorKey) {
         hl.forEach((range) => {
-          if (spelling === this.getBaseFormByRange(range as Range)) {
+          if (spelling === this.getSegmentByRange(range as Range)?.baseForm) {
             this.highlights.get(newColorKey)?.add(range)
             hl.delete(range)
           }

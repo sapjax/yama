@@ -143,7 +143,7 @@ const NOMINALISERS = new Set(['さ', 'み'])
 const shouldMergeForward = (
   prev: UnmergedToken,
   curr: UnmergedToken,
-): boolean => {
+): [boolean, boolean] => {
   const { pos, posSub1, surfaceForm } = curr
 
   /* ───────────────────────────────────────────────
@@ -151,38 +151,38 @@ const shouldMergeForward = (
      ──────────────────────────────────────────── */
 
   // 0. Disallow the polite prefix 「お」 unless next token is a noun
-  if (prev.surfaceForm === 'お' && pos !== '名詞') return false
+  if (prev.surfaceForm === 'お' && pos !== '名詞') return [false, false]
 
   // 1. Polite auxiliaries after a verb  e.g. 食べ <ます>
-  if (prev.pos === '動詞' && AUX_POLITE.has(surfaceForm)) return true
+  if (prev.pos === '動詞' && AUX_POLITE.has(surfaceForm)) return [true, false]
 
   // 2. Progressive contractions  e.g. 見 <てる> / 見 <ちゃう>
-  if (prev.pos === '動詞' && PROGRESSIVES.has(surfaceForm)) return true
+  if (prev.pos === '動詞' && PROGRESSIVES.has(surfaceForm)) return [true, false]
 
   // 3. て + あげる／くれる／…   見 <てあげる>
   if (prev.surfaceForm.endsWith('て') && TE_HELPERS.has(surfaceForm))
-    return true
+    return [true, false]
 
   // 4. Light‑verb compounds (verb+こと/もの/ところ)
   if (prev.pos === '動詞' && ['こと', 'もの', 'ところ'].includes(surfaceForm))
-    return true
+    return [true, false]
 
   // 5. Sentence‑ending combos  e.g. 最高 <じゃん>
-  if (SENT_ENDING.has(surfaceForm) && prev.pos !== '記号') return true
+  if (SENT_ENDING.has(surfaceForm) && prev.pos !== '記号') return [true, false]
 
   // 6. Katakana word + long‑vowel bar  e.g. カワイ <イー>
-  if (surfaceForm === 'ー' && isKatakana(prev.surfaceForm)) return true
+  if (surfaceForm === 'ー' && isKatakana(prev.surfaceForm)) return [true, false]
 
   // 7. Laugh filler "w"/"www"
-  if (/^w{1,5}$/.test(surfaceForm)) return true
+  if (/^w{1,5}$/.test(surfaceForm)) return [true, false]
 
   /* ───────────────────────────────────────────────
      B. core morphology glue
      ──────────────────────────────────────────── */
 
   // 8. verb core + auxiliary or verb suffix
-  if (pos === '助動詞' && prev.pos === '動詞') return true
-  if (posSub1 === '接尾' && prev.pos === '動詞') return true
+  if (pos === '助動詞' && prev.pos === '動詞') return [true, false]
+  if (posSub1 === '接尾' && prev.pos === '動詞') return [true, false]
 
   // refined volitional 「…う」
   if (
@@ -190,62 +190,62 @@ const shouldMergeForward = (
     && prev.pos === '動詞'
     && /[いえ]$/.test(prev.surfaceForm)
   )
-    return true
-  if (AUX_VERBS.includes(surfaceForm) && surfaceForm !== 'う') return true
+    return [true, false]
+  if (AUX_VERBS.includes(surfaceForm) && surfaceForm !== 'う') return [true, false]
 
   // 9. passive / potential れ + る
-  if (prev.surfaceForm.endsWith('れ') && surfaceForm === 'る') return true
+  if (prev.surfaceForm.endsWith('れ') && surfaceForm === 'る') return [true, false]
 
   // 10. progressive contraction て + た／だ
   if (prev.surfaceForm.endsWith('て') && ['た', 'だ'].includes(surfaceForm))
-    return true
+    return [true, false]
 
   // 11. noun + common noun suffix
-  if (prev.pos === '名詞' && NOUN_SUFFIXES.includes(surfaceForm)) return true
-  if (posSub1 === '接尾' && prev.pos === '名詞') return true
+  if (prev.pos === '名詞' && NOUN_SUFFIXES.includes(surfaceForm)) return [true, false]
+  if (posSub1 === '接尾' && prev.pos === '名詞') return [true, false]
 
   // 12. Adjective stem + さ／み  (高 + さ, 重 + み)
-  if (prev.pos === '形容詞' && NOMINALISERS.has(surfaceForm)) return true
+  if (prev.pos === '形容詞' && NOMINALISERS.has(surfaceForm)) return [true, false]
 
   // 13. Honorifics after a name   太郎 <くん>  / アリス <さん>
-  if (posSub1 === '接尾' && HONORIFICS.has(surfaceForm)) return true
+  if (posSub1 === '接尾' && HONORIFICS.has(surfaceForm)) return [true, false]
 
   // 14. っぽい／みたい／らしい adnominal endings
-  if (EXPLAN_ENDINGS.has(surfaceForm) && prev.pos !== '記号') return true
+  if (EXPLAN_ENDINGS.has(surfaceForm) && prev.pos !== '記号') return [true, false]
 
   // 15. 促音便 stem + と／こ／ちゃ…   思っ <とく>
   if (
     prev.surfaceForm.endsWith('っ')
     && ['と', 'こ', 'ちゃ', 'ちま', 'ちゅ'].includes(surfaceForm)
   )
-    return true
+    return [true, false]
 
   // 16. prefix + noun/verb   再 <開> / ご <飯>
-  if (prev.pos === '接頭詞' && ['名詞', '動詞'].includes(pos)) return true
+  if (prev.pos === '接頭詞' && ['名詞', '動詞'].includes(pos)) return [true, true]
   if (PREFIXES.includes(prev.surfaceForm) && ['名詞', '動詞'].includes(pos))
-    return true
+    return [true, true]
 
   // 17. Katakana noun + する verb  (ガード + する)
   if (prev.pos === '名詞' && isKatakana(prev.surfaceForm) && pos === '動詞')
-    return true
+    return [true, false]
 
   // 18. fixed idioms list
   const joined = prev.surfaceForm + surfaceForm
-  if (FIXED_IDIOMS.some(id => joined.startsWith(id))) return true
+  if (FIXED_IDIOMS.some(id => joined.startsWith(id))) return [true, true]
 
   // 19. explanatory んだ／んだな
   if (
     /^[んえ]だ/.test(surfaceForm)
     && ['形容詞', '動詞', '名詞'].includes(prev.pos)
   )
-    return true
+    return [true, false]
 
   /* ───────────────────────────────────────────────
      C. things we explicitly do NOT merge
      ──────────────────────────────────────────── */
 
   // never merge particles forward
-  if (pos === '助詞') return false
+  if (pos === '助詞') return [false, false]
 
   /* Numeric + unit / counter rules remain disabled – re‑enable if you need them
      -------------------------------------------------------------------------
@@ -253,18 +253,22 @@ const shouldMergeForward = (
      if (isNumeric(prev) && COUNTERS.includes(surfaceForm)) return true
    */
 
-  return false
+  return [false, false]
 }
 
 const mergeTokens = (tokens: UnmergedToken[]): SegmentedToken[] => {
   const merged: UnmergedToken[] = []
   for (const tok of tokens) {
     const prev = merged.at(-1)
-    if (prev && shouldMergeForward(prev, tok)) {
-      prev.surfaceForm += tok.surfaceForm
-      prev.endIndex = tok.endIndex
-      prev.reading += tok.reading
-      continue
+    if (prev) {
+      const [shouldMergeSurfaceForm, shouldMergeBaseForm] = shouldMergeForward(prev, tok)
+      if (shouldMergeSurfaceForm) {
+        if (shouldMergeBaseForm) prev.baseForm += tok.baseForm
+        prev.surfaceForm += tok.surfaceForm
+        prev.endIndex = tok.endIndex
+        prev.reading += tok.reading
+        continue
+      }
     }
     merged.push({ ...tok })
   }
