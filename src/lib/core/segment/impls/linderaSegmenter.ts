@@ -1,5 +1,6 @@
-import type { SegmentedToken, Segmenter } from '../interface'
+import type { SegmentedToken, Segmenter, SegmentOptions } from '../interface'
 import __wbg_init, { Tokenizer, TokenizerBuilder } from 'lindera-wasm-ipadic'
+import { mergeTokens } from './bunkatsu'
 
 type LinderaToken = {
   baseForm: string
@@ -33,24 +34,43 @@ class LinderaSegmenter implements Segmenter {
     this.tokenizer = builder.build()
   }
 
-  segment(input: string): SegmentedToken[] {
+  segment(input: string, options?: SegmentOptions): SegmentedToken[] {
     if (!this.tokenizer) {
       throw new Error('LinderaSegmenter is not initialized. Please call init() before segment().')
     }
 
     const tokens = this.tokenizer.tokenize(input) as LinderaToken[]
-    const filteredTokens = tokens.filter(t => !!t.baseForm && t.partOfSpeech !== '記号')
+    if (options?.mergeTokens) {
+      const unmergedTokens = tokens.map(token => ({
+        surfaceForm: token.surface || '',
+        baseForm: token.baseForm || '',
+        startIndex: byteIndexToCharIndex(input, token.byteStart),
+        endIndex: byteIndexToCharIndex(input, token.byteEnd),
+        reading: token.reading || '',
+        pos: token.partOfSpeech,
+        posSub1: token.partOfSpeechSubcategory1,
+        isWordLike: token.partOfSpeech !== '記号',
+      }))
 
-    const segmentTokens = filteredTokens.map(token => ({
-      surfaceForm: token.surface || '',
-      baseForm: token.baseForm || '',
-      startIndex: byteIndexToCharIndex(input, token.byteStart),
-      endIndex: byteIndexToCharIndex(input, token.byteEnd),
-      reading: token.reading || '',
-      isWordLike: true,
-    }))
+      const processedTokens = options?.mergeTokens ? mergeTokens(unmergedTokens) : unmergedTokens
+      const filteredTokens = processedTokens.filter(t => !!t.baseForm && t.isWordLike)
 
-    return segmentTokens
+      return filteredTokens
+    } else {
+      // filter first then call byteIndexToCharIndex for performance consider
+      const segmentedTokens = tokens
+        .filter(token => !!token.baseForm && token.partOfSpeech !== '記号')
+        .map(token => ({
+          surfaceForm: token.surface || '',
+          baseForm: token.baseForm || '',
+          startIndex: byteIndexToCharIndex(input, token.byteStart),
+          endIndex: byteIndexToCharIndex(input, token.byteEnd),
+          reading: token.reading || '',
+          pos: token.partOfSpeech,
+          isWordLike: true,
+        }))
+      return segmentedTokens
+    }
   }
 }
 

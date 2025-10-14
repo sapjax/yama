@@ -66,6 +66,9 @@ export interface AppSettings {
     ai_explain: string
     pronounce: string
   }
+  segmenter: {
+    linderaMergeTokens: boolean
+  }
 }
 
 export const defaultSettings: AppSettings = {
@@ -102,13 +105,25 @@ export const defaultSettings: AppSettings = {
     ai_explain: 'w',
     pronounce: 'r',
   },
+  segmenter: {
+    linderaMergeTokens: false,
+  },
 }
 
+let settingsCache: AppSettings | null = null
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'sync' && changes[SETTINGS_KEY]) {
+    console.log('Settings have changed in storage, invalidating cache.')
+    settingsCache = null
+  }
+})
+
 /**
- * Merges saved settings with defaults, synchronizes with available dictionaries,
- * and ensures all keys are present.
+ * Fetches settings from storage, merges with defaults, synchronizes with available dictionaries,
+ * and ensures all keys are present. This function does not use the cache.
  */
-export const getSettings = async (): Promise<AppSettings> => {
+const _getAndCacheSettings = async (): Promise<AppSettings> => {
   try {
     const data = await chrome.storage.sync.get(SETTINGS_KEY)
     const savedSettings = data[SETTINGS_KEY] as Partial<AppSettings> | undefined
@@ -131,11 +146,23 @@ export const getSettings = async (): Promise<AppSettings> => {
       colors: { ...defaultSettings.colors, ...savedSettings?.colors },
       reviewColors: { ...defaultSettings.reviewColors, ...savedSettings?.reviewColors },
       dicts: finalDicts,
+      segmenter: { ...defaultSettings.segmenter, ...savedSettings?.segmenter },
     }
   } catch (error) {
     console.error('Error getting settings:', error)
     return defaultSettings
   }
+}
+
+/**
+ * Retrieves settings, using a cache to avoid frequent storage access.
+ */
+export const getSettings = async (): Promise<AppSettings> => {
+  if (settingsCache) {
+    return settingsCache
+  }
+  settingsCache = await _getAndCacheSettings()
+  return settingsCache
 }
 
 export const updateSettings = async (newSettings: Partial<AppSettings>): Promise<void> => {
@@ -146,6 +173,7 @@ export const updateSettings = async (newSettings: Partial<AppSettings>): Promise
       ...newSettings,
       colors: { ...currentSettings.colors, ...(newSettings.colors || {}) },
       dicts: newSettings.dicts || currentSettings.dicts,
+      segmenter: { ...currentSettings.segmenter, ...(newSettings.segmenter || {}) },
     }
 
     //  ensure that only valid dictionaries are ever written to storage.
@@ -153,6 +181,9 @@ export const updateSettings = async (newSettings: Partial<AppSettings>): Promise
     mergedSettings.dicts = mergedSettings.dicts.filter(d => availableDictIds.includes(d.id))
 
     await chrome.storage.sync.set({ [SETTINGS_KEY]: mergedSettings })
+    // Update cache immediately for consistency.
+    // The onChanged listener will handle updates from other extension parts.
+    settingsCache = mergedSettings
   } catch (error) {
     console.error('Error updating settings:', error)
   }

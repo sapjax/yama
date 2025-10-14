@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button'
 import { useEffect, useState } from 'react'
 import { AiSettings } from './components/AiSettings'
 import { ColorSettings } from './components/ColorSettings'
@@ -6,6 +5,7 @@ import { DictSettings } from './components/DictSettings'
 import { JpdbSettings } from './components/JpdbSettings'
 import { ShortcutSettings } from './components/ShortcutSettings'
 import { ThemeSettings } from './components/ThemeSettings'
+import { SegmenterSettings } from './components/SegmenterSettings'
 import { cn } from '@/lib/utils'
 
 const tabs = {
@@ -32,6 +32,10 @@ const tabs = {
   theme: {
     label: 'Theme',
     component: <ThemeSettings />,
+  },
+  segmenter: {
+    label: 'Segmenter',
+    component: <SegmenterSettings />,
   },
 }
 

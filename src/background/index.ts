@@ -106,7 +106,8 @@ onMessage(Messages.get_marked_words, async () => {
 onMessage(Messages.segment, async ({ data }) => {
   await services.ensureInitialized(services.segmenter)
   const { text } = data
-  return services.segmenter.segment(text)
+  const settings = await getSettings()
+  return services.segmenter.segment(text, { mergeTokens: settings.segmenter.linderaMergeTokens })
 })
 
 onMessage(Messages.lookup, async ({ data }) => {

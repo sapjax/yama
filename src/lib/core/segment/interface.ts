@@ -5,10 +5,15 @@ export type SegmentedToken = {
   endIndex: number
   reading: string
   isWordLike: boolean
+  pos?: string
+}
+
+export type SegmentOptions = {
+  mergeTokens?: boolean
 }
 
 export interface Segmenter {
   isReady: boolean
   init (): Promise<void>
-  segment(input: string): SegmentedToken[]
+  segment(input: string, options?: SegmentOptions): SegmentedToken[]
 }

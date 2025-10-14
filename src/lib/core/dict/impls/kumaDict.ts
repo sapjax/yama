@@ -13,7 +13,6 @@ const _fetch = async (word: string, signal: AbortSignal): Promise<DictionaryEntr
     const res = parseDocument(word, html)
     return res
   } catch (e) {
-    console.error(e)
     return null
   }
 }
