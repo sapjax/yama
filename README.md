@@ -34,7 +34,8 @@ Like LingQ、Migaku、relingo、trancy, but free and open source.
 
 ## Installation
 
-1.  Download from the [Chrome Web Store]() (Coming Soon)
+-  [<img src="https://fonts.gstatic.com/s/i/productlogos/chrome_store/v7/192px.svg" width="24" /> Chrome Web Store](https://chromewebstore.google.com/detail/yama/okamlfefmmbpikhijpbdobpmfdfhgcce) 
+
 
 ## Screenshots
 
