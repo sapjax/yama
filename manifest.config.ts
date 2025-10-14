@@ -31,7 +31,7 @@ export default defineManifest({
   },
   web_accessible_resources: [
     {
-      resources: ['assets/*.js', '*.png'],
+      resources: ['assets/*.js', '*.png', '*.svg'],
       matches: ['<all_urls>', 'file://*/*'],
     },
   ],
