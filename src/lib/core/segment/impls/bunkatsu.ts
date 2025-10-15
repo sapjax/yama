@@ -220,6 +220,14 @@ const shouldMergeForward = (
   )
     return [true, false]
 
+  // 15.2 促音便 stem + て／た…   持って, やって
+  if (
+    prev.pos === '動詞'
+    && prev.surfaceForm.endsWith('っ')
+    && ['て', 'た'].includes(surfaceForm)
+  )
+    return [true, false]
+
   // 16. prefix + noun/verb   再 <開> / ご <飯>
   if (prev.pos === '接頭詞' && ['名詞', '動詞'].includes(pos)) return [true, true]
   if (PREFIXES.includes(prev.surfaceForm) && ['名詞', '動詞'].includes(pos))
