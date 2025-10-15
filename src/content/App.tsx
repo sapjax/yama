@@ -15,10 +15,9 @@ import { SegmentedToken } from '@/lib/core/segment'
 
 function App() {
   const [curWord, setCurWord] = useState('')
-  const [surfaceForm, setSurfaceForm] = useState('')
   const [curRange, setCurRange] = useState<Range | null>(null)
   const [settings, setSettings] = useState<AppSettings>()
-  const [deferredWord] = useDebounce(surfaceForm, 300, { leading: true, trailing: true })
+  const [deferredWord] = useDebounce(curWord, 300, { leading: true, trailing: true })
   const dictNames = settings?.dicts.filter(d => d.enabled).map(d => d.id as DictName) ?? []
   const highlightRef = useRef<Highlighter>(null)
   const styleContainerRef = useRef<HTMLDivElement>(null)
@@ -129,7 +128,6 @@ function App() {
   const updateWord = useCallback((segment: SegmentedToken, range: Range, rect: DOMRect) => {
     stayEnoughDebounce.cancel()
     setCurWord(segment.baseForm)
-    setSurfaceForm(segment.surfaceForm)
     setCurRange(range)
     refs.setPositionReference({
       getBoundingClientRect: () => rect,
@@ -281,7 +279,7 @@ function App() {
         >
           {!!settings?.ai && <AiExplain word={curWord} range={curRange} ref={aiExplainRef} />}
           {!!curWord && dictNames.map(dictName =>
-            <Dict key={dictName} word={surfaceForm} dictName={dictName} />,
+            <Dict key={dictName} word={deferredWord} dictName={dictName} />,
           )}
         </div>
       </div>
