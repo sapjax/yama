@@ -1,10 +1,11 @@
 import { Messages } from '@/lib/message'
 import { getSentenceFromRange, cn } from '@/lib/utils'
 import { Bot } from 'lucide-react'
-import { useEffect, useState, useCallback, useImperativeHandle, Ref } from 'react'
+import { useEffect, useState, useCallback, useImperativeHandle, Ref, lazy, Suspense } from 'react'
 import { sendMessage, onMessage } from 'webext-bridge/content-script'
 import markdownStyle from '../../assets/markdown.css?inline'
-import Markdown from 'markdown-to-jsx'
+
+const Markdown = lazy(() => import('markdown-to-jsx'))
 
 export type AiExplainHandler = {
   handleExplain: () => void
@@ -79,9 +80,11 @@ export function AiExplain({ word, range, ref }: { word: string, range: Range | n
           {explanation && (
             <div className="space-y-2 rounded-md border border-border bg-card p-2.5 text-xs text-card-foreground">
               <div className="markdown-body">
-                <Markdown options={{ forceBlock: true, enforceAtxHeadings: true }}>
-                  {explanation}
-                </Markdown>
+                <Suspense fallback={<div>Loading...</div>}>
+                  <Markdown options={{ forceBlock: true, enforceAtxHeadings: true }}>
+                    {explanation}
+                  </Markdown>
+                </Suspense>
               </div>
             </div>
           )}
