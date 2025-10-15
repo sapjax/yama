@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { getSettings, updateSettings } from '@/lib/settings'
 import { sendMessage } from 'webext-bridge/options'
 import { Messages, Deck } from '@/lib/message'
-import clsx from 'clsx'
+import { cn } from '@/lib/utils/className'
 import { AlertCircleIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -110,7 +110,7 @@ export function JpdbSettings() {
             }}
             autoCapitalize="off"
             placeholder="Enter your JPDB API key"
-            className={clsx(
+            className={cn(
               'w-64',
               apiKey && !isApiKeyValid && 'border-destructive',
             )}
@@ -167,7 +167,7 @@ export function JpdbSettings() {
         >
           {isSyncing ? 'Syncing...' : 'Save & Sync'}
         </Button>
-        <p className={clsx(
+        <p className={cn(
           'text-xs',
           status?.startsWith('Error') ? 'text-destructive' : 'text-muted-foreground',
         )}

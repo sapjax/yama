@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import clsx from 'clsx'
+import { cn } from '@/lib/utils/className'
 import { Switch } from '@/components/ui/switch'
 import { sendMessage } from 'webext-bridge/popup'
 import { Messages, WordStatistics } from '@/lib/message'
@@ -73,7 +73,7 @@ function Popup() {
       <>
         <div className="max-w-[200px] truncate text-lg font-semibold text-foreground">{currentDomain}</div>
         <div className="mt-4 flex items-center justify-center">
-          <span className={clsx('mr-3 text-sm font-medium', isWhitelisted ? 'text-primary' : 'text-muted-foreground')}>
+          <span className={cn('mr-3 text-sm font-medium', isWhitelisted ? 'text-primary' : 'text-muted-foreground')}>
             {isWhitelisted ? 'Activated' : 'Deactivated'}
           </span>
           <Switch

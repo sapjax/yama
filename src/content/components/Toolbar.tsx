@@ -3,7 +3,7 @@ import { WordStatus, WordStatusList } from '@/lib/core/mark'
 import { Highlighter, getCSSHighlightKey } from '@/lib/highlight'
 import { AppSettings } from '@/lib/settings'
 import { hsvaToRgbaString, rgbStringToHsva } from '@uiw/color-convert'
-import clsx from 'clsx'
+import { cn } from '@/lib/utils/className'
 
 type ToolbarProps = {
   word: string
@@ -92,7 +92,7 @@ export default function Toolbar(props: ToolbarProps) {
           {markAbleStatuses.map((s, index) => (
             <div
               key={s}
-              className={clsx(
+              className={cn(
                 'pointer-events-auto h-2.5 w-2.5 cursor-pointer rounded-full border-2 bg-card transition-transform hover:scale-125',
                 '-translate-y-full',
                 { 'border-[3px]': index === currentIndex },
@@ -114,7 +114,7 @@ export default function Toolbar(props: ToolbarProps) {
       </div>
       <div className="mx-[-32px] mt-1 flex justify-between">
         {markAbleStatuses.map((s, i) => (
-          <div key={s} className={clsx('flex-1 truncate px-0.5 text-center text-[10px]', i === currentIndex ? 'text-foreground' : 'text-muted-foreground')}>
+          <div key={s} className={cn('flex-1 truncate px-0.5 text-center text-[10px]', i === currentIndex ? 'text-foreground' : 'text-muted-foreground')}>
             {KanjiLabelMap[s]}
           </div>
         ))}
