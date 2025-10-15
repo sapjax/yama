@@ -31,6 +31,7 @@ class LinderaSegmenter implements Segmenter {
     // Set the tokenizer mode to "normal"
     // You can also use "decompose" for decomposing the compound words into their components
     builder.setMode('normal')
+    builder.appendCharacterFilter('unicode_normalize', { kind: 'nfkc' })
     this.tokenizer = builder.build()
   }
 
@@ -49,7 +50,7 @@ class LinderaSegmenter implements Segmenter {
         reading: token.reading || '',
         pos: token.partOfSpeech,
         posSub1: token.partOfSpeechSubcategory1,
-        isWordLike: token.partOfSpeech !== '記号',
+        isWordLike: token.partOfSpeech !== '記号' && token.partOfSpeech !== 'UNK',
       }))
 
       const processedTokens = mergeTokens(unmergedTokens)
@@ -59,7 +60,7 @@ class LinderaSegmenter implements Segmenter {
     } else {
       // filter first then call byteIndexToCharIndex for performance consider
       const segmentedTokens = tokens
-        .filter(token => !!token.baseForm && token.partOfSpeech !== '記号')
+        .filter(token => !!token.baseForm && token.partOfSpeech !== '記号' && token.partOfSpeech !== 'UNK')
         .map(token => ({
           surfaceForm: token.surface || '',
           baseForm: token.baseForm || '',
