@@ -95,7 +95,7 @@ export const defaultSettings: AppSettings = {
       apiKey: '',
       endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
       model: 'gemini-2.5-flash-lite',
-      prompt: 'explain the grammar of this sentence:『 ${context}』and the word:『 ${word}』, response with Chinese, keep simple',
+      prompt: 'explain the grammar of this sentence:『 ${context}』and the word:『 ${word}』, response with English, keep simple',
     },
   },
   shortcuts: {
@@ -106,7 +106,7 @@ export const defaultSettings: AppSettings = {
     pronounce: 'r',
   },
   segmenter: {
-    linderaMergeTokens: false,
+    linderaMergeTokens: true,
   },
 }
 

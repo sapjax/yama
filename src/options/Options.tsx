@@ -17,6 +17,10 @@ const tabs = {
     label: 'Dictionaries',
     component: <DictSettings />,
   },
+  segmenter: {
+    label: 'Segmenter',
+    component: <SegmenterSettings />,
+  },
   jpdb: {
     label: 'JPDB Sync',
     component: <JpdbSettings />,
@@ -33,10 +37,7 @@ const tabs = {
     label: 'Theme',
     component: <ThemeSettings />,
   },
-  segmenter: {
-    label: 'Segmenter',
-    component: <SegmenterSettings />,
-  },
+
 }
 
 type TabName = keyof typeof tabs
