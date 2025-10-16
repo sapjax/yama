@@ -1,5 +1,3 @@
-import { JLPTLevel } from '@/lib/core/tag/type'
-
 export type DictionaryEntry = {
   definitions: Definition[]
 }
@@ -28,7 +26,7 @@ export type Definition = {
     width: number
     height: number
   }[]
-  jlpt?: JLPTLevel
+  jlpt?: 'N1' | 'N2' | 'N3' | 'N4' | 'N5'
 }
 
 type Example = {
