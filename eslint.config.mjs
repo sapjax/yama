@@ -52,20 +52,14 @@ export default [
       'eslint.config.mjs',
       'vite.config.ts',
       'manifest.config.ts',
-      'eslint.config.mjs',
-      'vite.config.ts',
       'postcss.config.ts',
     ],
     plugins: {
       '@typescript-eslint': ts,
       '@stylistic': stylistic,
     },
-    // extends: ['react-hooks/recommended'],
     languageOptions: {
       parser: tsParser,
-      parserOptions: {
-        project: './tsconfig.node.json',
-      },
     },
     rules: {
       ...stylistic.configs.recommended.rules,
