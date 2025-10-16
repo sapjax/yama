@@ -17,13 +17,13 @@ const _fetch = async (word: string, signal: AbortSignal): Promise<DictionaryEntr
   }
 }
 
-const parseDocument = async (word: string, html: string) => {
+const parseDocument = (_word: string, html: string) => {
   const dataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/)
   const jsonString = dataMatch?.[1]
 
   if (jsonString) {
     const json: any = JSON.parse(jsonString)
-    const imgObject = json.props.pageProps.words[0].imgs[0]
+    const imgObject = json?.props?.pageProps?.words?.[0]?.imgs?.[0]
     if (!imgObject) return null
 
     return {

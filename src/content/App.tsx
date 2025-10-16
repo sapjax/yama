@@ -8,6 +8,7 @@ import { AppSettings, getSettings } from '@/lib/settings'
 import { DictName } from '@/lib/core/dict'
 import { Messages } from '@/lib/message'
 import { listenColorSchemeChange, cn } from '@/lib/utils'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import Dict from './components/Dict'
 import Toolbar from './components/Toolbar'
 import { AiExplain, AiExplainHandler } from './components/AiExplain'
@@ -276,8 +277,20 @@ function App() {
           ref={containerRef}
         >
           {!!settings?.ai && <AiExplain word={curWord} range={curRange} ref={aiExplainRef} />}
-          {!!curWord && dictNames.map(dictName =>
-            <Dict key={dictName} word={deferredWord} dictName={dictName} />,
+          {!!curWord && dictNames.map(dictName => (
+            <ErrorBoundary
+              key={dictName}
+              fallback={(
+                <div className="text-destructive">
+                  Error loading dictionary:
+                  {' '}
+                  {dictName}
+                </div>
+              )}
+            >
+              <Dict word={deferredWord} dictName={dictName} />
+            </ErrorBoundary>
+          ),
           )}
         </div>
       </div>
