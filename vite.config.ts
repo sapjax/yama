@@ -28,7 +28,7 @@ export default defineConfig({
     }),
     tailwindcss(),
     crx({ manifest }),
-    zip({ outDir: 'release', outFileName: `crx-${name}-${version}.zip` }),
+    zip({ outDir: 'release', outFileName: `${name}-${version}.zip` }),
   ],
   optimizeDeps: {
     exclude: [

@@ -1,0 +1,55 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on tags like v1.0.0, v1.2.3, etc.
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to create the release
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history to get previous tags
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build extension
+        run: bun run build
+
+      - name: Generate release notes
+        id: generate_release_notes
+        run: |
+          # Get the previous tag, handling the case of the very first tag
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | sed -n '2p')
+          if [ -z "$PREVIOUS_TAG" ]; then
+            # If there's no previous tag, link to all commits.
+            # You might want to customize this message.
+            RELEASE_BODY="Initial release. See all commits at https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}"
+          else
+            # Otherwise, create a compare link between the previous and current tag
+            RELEASE_BODY="See what's new in this release: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${{ github.ref_name }}"
+          fi
+          # Use a heredoc to handle multiline strings for the output
+          cat <<EOF > release_notes.md
+          ${RELEASE_BODY}
+          EOF
+          
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # The body_path reads the content from the file generated in the previous step
+          body_path: release_notes.md
+          # Find the zip file in the release directory to upload as an asset
+          files: release/yama-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
