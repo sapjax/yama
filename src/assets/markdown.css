@@ -36,6 +36,10 @@
 		margin-bottom: 1em;
 	}
 
+	strong {
+		color: var(--foreground);
+	}
+
 	/* Links */
 	a {
 		color: #007bff;
@@ -49,8 +53,17 @@
 	/* Lists */
 	ul,
 	ol {
+		list-style: initial;
 		margin-bottom: 1em;
 		padding-left: 20px;
+	}
+
+	li {
+		display: list-item;
+	}
+
+	li::marker {
+		color: var(--primary);
 	}
 
 	/* Code blocks and inline code */

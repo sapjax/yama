@@ -228,9 +228,7 @@ function App() {
     <>
       <div ref={styleContainerRef}></div>
       <div
-        className={cn(
-          'absolute top-0 left-0 isolate z-[1000000000] w-96 rounded-lg border-2 border-border bg-muted text-card-foreground shadow-xl',
-        )}
+        className="absolute top-0 left-0 isolate z-[1000000000] w-96 rounded-lg border-2 border-border bg-muted text-card-foreground shadow-xl selection:bg-primary selection:text-primary-foreground"
         ref={refs.setFloating}
         inert={!isOpen}
         style={{

@@ -66,7 +66,7 @@ export function Options() {
 
   return (
     <div className="flex min-h-screen bg-background font-sans text-foreground">
-      <div className="w-64 border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+      <div className="w-64 border-r border-sidebar-ring bg-sidebar text-sidebar-foreground">
         <div className="flex items-center gap-2 p-4">
           <img src="/logo.png" alt="yama" className="h-10 w-10" />
           <h1 className="text-xl font-bold text-muted-foreground">Settings</h1>
@@ -79,7 +79,7 @@ export function Options() {
                 cn(
                   'p-4 ml-4 rounded-l-lg',
                   activeTab === tabName
-                    ? 'border border-sidebar-border bg-background text-foreground -mr-[1px]'
+                    ? 'border border-sidebar-ring bg-background text-foreground -mr-[1px]'
                     : 'hover:bg-accent hover:text-accent-foreground',
                   'border-r-0',
                 )
