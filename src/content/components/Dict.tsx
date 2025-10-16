@@ -269,7 +269,7 @@ function AudioButton({ spelling, audioUrls }: { spelling: string, audioUrls: str
       }}
       className="mt-1 px-2 text-muted-foreground hover:text-primary"
     >
-      <Volume2 className="h-3 w-3" />
+      <Volume2 size={14} />
     </div>
   )
 }
