@@ -43,6 +43,19 @@ jobs:
           cat <<EOF > release_notes.md
           ${RELEASE_BODY}
           EOF
+
+      - name: Get extension file path
+        id: get_path
+        run: echo "path=$(find release -name 'yama-*.zip')" >> $GITHUB_OUTPUT
+
+      - name: Publish to Chrome Web Store
+        uses: fregante/chrome-webstore-upload-action@v1
+        with:
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          zip-file: ${{ steps.get_path.outputs.path }}
           
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
