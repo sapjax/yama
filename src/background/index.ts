@@ -116,8 +116,17 @@ onMessage(Messages.lookup, async ({ data }) => {
   return await dict.lookup(word)
 })
 
-onMessage(Messages.playAudio, async ({ data }) => {
-  playAudio(data.audioUrl, data.text)
+onMessage(Messages.playAudio, async ({ data, sender }) => {
+  playAudio({ ...data, tabId: sender.tabId })
+})
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === 'audio_state_changed') {
+    sendMessage(Messages.audio_state_changed,
+      { audioUrl: message.audioUrl, state: message.state },
+      { tabId: message.tabId, context: 'content-script' },
+    )
+  }
 })
 
 onMessage(Messages.jpdb_login, async ({ data }) => {

@@ -27,6 +27,9 @@ declare module 'webext-bridge' {
 
     // Statistics
     [Messages.get_statistics]: ProtocolWithReturn<{}, WordStatistics>
+
+    // Audio
+    [Messages.audio_state_changed]: { audioUrl: string, state: 'loading' | 'playing' | 'idle' }
   }
 }
 
@@ -54,6 +57,7 @@ const enum Messages {
   ai_explain_stream_cancel = 'ai_explain_stream_cancel',
   get_statistics = 'get_statistics',
 
+  audio_state_changed = 'audio_state_changed',
 }
 
 async function sendMessageToAllTabs<T extends Messages>(action: T, data: ProtocolMap[T]) {

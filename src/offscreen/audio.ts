@@ -5,13 +5,24 @@ chrome.runtime.onMessage.addListener(async (message) => {
   if (message.target !== 'offscreen') return
   if (message.type === 'play-audio') {
     try {
-      let src = message.data.audio
+      const originalSrc = message.data.audio
+      let src = originalSrc
       if (src?.startsWith('https://jpdb.io/')) {
+        chrome.runtime.sendMessage({ type: 'audio_state_changed', audioUrl: originalSrc, tabId: message.data.tabId, state: 'loading' })
         src = await getJPDBAudioUrl(src)
       }
 
       const audio = new Audio(src)
       audio.volume = message.data?.volume / 100
+      audio.addEventListener('playing', () => {
+        chrome.runtime.sendMessage({ type: 'audio_state_changed', audioUrl: originalSrc, tabId: message.data.tabId, state: 'playing' })
+      })
+      audio.addEventListener('ended', () => {
+        chrome.runtime.sendMessage({ type: 'audio_state_changed', audioUrl: originalSrc, tabId: message.data.tabId, state: 'idle' })
+      })
+      audio.addEventListener('error', () => {
+        chrome.runtime.sendMessage({ type: 'audio_state_changed', audioUrl: originalSrc, tabId: message.data.tabId, state: 'idle' })
+      })
       audio.play()
     } catch (error) {
       console.log(error)
@@ -44,3 +55,5 @@ async function getAudioBuffer(src: string) {
     throw new Error(res.statusText)
   }
 }
+
+chrome.runtime.sendMessage({ type: 'offscreen-ready' })

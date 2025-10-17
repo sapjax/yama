@@ -4,6 +4,7 @@ import { Messages } from '@/lib/message'
 import { sendMessage } from 'webext-bridge/content-script'
 import { Volume2, BookOpen, ExternalLink, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { AudioButton } from './AudioButton'
 
 type DictProps = { word: string, dictName: DictName }
 
@@ -250,28 +251,6 @@ function DictLoading({ word, dictName }: DictProps) {
 
 async function lookup(word: string, dictName: DictName) {
   return sendMessage(Messages.lookup, { word, dictName }, 'background')
-}
-
-const playAudio = (text: string, audioUrl?: string) => {
-  sendMessage(Messages.playAudio, { text, audioUrl }, 'background')
-}
-
-function AudioButton({ spelling, audioUrls }: { spelling: string, audioUrls: string[] }) {
-  const [nextAudio, setNextAudio] = useState(audioUrls[0])
-
-  return (
-    <div
-      role="button"
-      data-pronounce
-      onClick={() => {
-        playAudio(spelling, nextAudio)
-        setNextAudio(audioUrls[(audioUrls.indexOf(nextAudio) + 1) % audioUrls.length])
-      }}
-      className="mt-1 px-2 text-muted-foreground hover:text-primary"
-    >
-      <Volume2 size={14} />
-    </div>
-  )
 }
 
 function PitchAccents({ spelling, pitchAccents }: {

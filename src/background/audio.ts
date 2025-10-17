@@ -1,4 +1,7 @@
-const playAudio = async (audioUrl?: string, text?: string, volume = 100) => {
+const playAudio = async (
+  { audioUrl, text, volume = 100, tabId }:
+  { audioUrl?: string, text?: string, volume?: number, tabId?: number },
+) => {
   if (!audioUrl && !text) return
 
   if (audioUrl) {
@@ -11,6 +14,7 @@ const playAudio = async (audioUrl?: string, text?: string, volume = 100) => {
       data: {
         audio: audioUrl,
         volume,
+        tabId,
       },
     })
   }
@@ -25,13 +29,23 @@ const playAudio = async (audioUrl?: string, text?: string, volume = 100) => {
 }
 
 const setupOffscreenDocument = async (path: string) => {
-  // Check all windows controlled by the service worker to see if one
-  // of them is the offscreen document with the given path
   if (await checkOffscreenDocumentExist(path)) return
+
   await chrome.offscreen.createDocument({
     url: path,
     reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK],
     justification: 'play audio for word pronunciation',
+  })
+
+  // Wait for the offscreen document to be ready
+  await new Promise<void>((resolve) => {
+    const listener = (message: any) => {
+      if (message.type === 'offscreen-ready') {
+        chrome.runtime.onMessage.removeListener(listener)
+        resolve()
+      }
+    }
+    chrome.runtime.onMessage.addListener(listener)
   })
 }
 
