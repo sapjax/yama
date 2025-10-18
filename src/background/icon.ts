@@ -6,15 +6,26 @@ const colors = {
     body: '#eeeeee', // Dark gray-blue
     outline: 'black',
     badge: '#666666',
+    active: {
+      body: '#5afc00',
+    },
   },
   dark: {
     body: 'black', // Dark gray-blue
     outline: '#eeeeee',
     badge: '#cccccc',
+    active: {
+      body: '#5afc00',
+    },
   },
 }
 
-export function drawIcon(canvas: OffscreenCanvas, size: number = 32, colorScheme?: ColorScheme) {
+export function drawIcon(
+  canvas: OffscreenCanvas,
+  size: number = 32,
+  colorScheme?: ColorScheme,
+  isActive: boolean = false,
+) {
   const context = canvas.getContext('2d')!
 
   const color = colors[colorScheme ?? 'light']
@@ -30,7 +41,7 @@ export function drawIcon(canvas: OffscreenCanvas, size: number = 32, colorScheme
   context.lineTo(24 * scale, 10 * scale) // Lower second peak
   context.lineTo(size - lineWidth / 2, size - lineWidth / 2)
   context.closePath()
-  context.fillStyle = color.body
+  context.fillStyle = isActive ? color.active.body : color.body
   context.strokeStyle = color.outline
   context.lineWidth = lineWidth
   context.fill()
@@ -41,11 +52,13 @@ export function drawIcon(canvas: OffscreenCanvas, size: number = 32, colorScheme
 
 let cachedTheme: ColorScheme = 'light'
 
-export function updateIcon(theme: ColorScheme = 'light') {
-  cachedTheme = theme
+export function updateIcon(theme: ColorScheme = 'light', isActive: boolean = false) {
+  if (theme) {
+    cachedTheme = theme
+  }
   const size = 32
   const canvas = new OffscreenCanvas(size, size)
-  const context = drawIcon(canvas, size, theme)
+  const context = drawIcon(canvas, size, theme, isActive)
 
   const imageData = context.getImageData(0, 0, size, size)
   chrome.action.setIcon({ imageData })

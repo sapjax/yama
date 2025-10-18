@@ -83,7 +83,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 })
 
 chrome.tabs.onActivated.addListener(function ({ tabId }) {
-  updateTabBadge(tabId)
+  updateBadgeActiveState(tabId)
 })
 
 // --- Message Listeners ---
@@ -170,7 +170,7 @@ onMessage(Messages.toggle_whitelist_status, async ({ data }) => {
     await addToWhitelist(domain)
     await injectScriptIntoTab(tabId)
   }
-  updateTabBadge(tabId)
+  updateBadgeActiveState(tabId)
 })
 
 let currentAiStreamController: AbortController | null = null
@@ -216,16 +216,9 @@ onMessage(Messages.set_color_scheme, async ({ data }) => {
   setIconBadgeCounting(services.wordMarker.getCounting())
 })
 
-function updateTabBadge(tabId: number) {
+function updateBadgeActiveState(tabId: number) {
   chrome.tabs.get(tabId, async function (tab) {
-    if (await isUrlWhitelisted(tab.url!)) {
-      if (chrome.runtime.lastError) {
-        setIconBadgeError(chrome.runtime.lastError.message!)
-      } else {
-        setIconBadgeCounting(services.wordMarker.getCounting())
-      }
-    } else {
-      clearIconBadge()
-    }
+    const isActive = await isUrlWhitelisted(tab.url!)
+    updateIcon(undefined, isActive)
   })
 }
