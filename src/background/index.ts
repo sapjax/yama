@@ -3,7 +3,7 @@ import { onMessage, sendMessage } from 'webext-bridge/background'
 import { services } from '@/background/services'
 import { getSettings, updateSettings } from '@/lib/settings'
 import { getWhitelist, isUrlWhitelisted, isDomainWhitelisted, removeFromWhitelist, addToWhitelist } from '@/lib/whitelist'
-import { updateIcon, setIconBadgeCounting, setIconBadgeError, clearIconBadge } from './icon'
+import { updateIcon, setIconBadgeCounting, setIconTheme } from './icon'
 import { playAudio } from './audio'
 // @ts-ignore
 import contentScriptPath from '@/content/main?script'
@@ -211,9 +211,10 @@ onMessage(Messages.ai_explain_stream_cancel, () => {
   }
 })
 
-onMessage(Messages.set_color_scheme, async ({ data }) => {
-  updateIcon(data.colorScheme)
+onMessage(Messages.set_color_scheme, async ({ data, sender }) => {
+  setIconTheme(data.colorScheme)
   setIconBadgeCounting(services.wordMarker.getCounting())
+  updateBadgeActiveState(sender.tabId)
 })
 
 function updateBadgeActiveState(tabId: number) {

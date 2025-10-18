@@ -52,6 +52,10 @@ export function drawIcon(
 
 let cachedTheme: ColorScheme = 'light'
 
+export function setIconTheme(theme: ColorScheme = 'light') {
+  cachedTheme = theme
+}
+
 export function updateIcon(theme: ColorScheme = 'light', isActive: boolean = false) {
   if (theme) {
     cachedTheme = theme
