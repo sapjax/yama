@@ -56,7 +56,7 @@ export function setIconTheme(theme: ColorScheme = 'light') {
   cachedTheme = theme
 }
 
-export function updateIcon(theme: ColorScheme = 'light', isActive: boolean = false) {
+export function updateIcon(theme: ColorScheme = 'light', isActive: boolean = false, tabId?: number) {
   if (theme) {
     cachedTheme = theme
   }
@@ -65,7 +65,7 @@ export function updateIcon(theme: ColorScheme = 'light', isActive: boolean = fal
   const context = drawIcon(canvas, size, theme, isActive)
 
   const imageData = context.getImageData(0, 0, size, size)
-  chrome.action.setIcon({ imageData })
+  chrome.action.setIcon({ imageData, tabId })
 }
 
 export function setIconBadgeError(message: string) {

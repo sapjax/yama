@@ -220,6 +220,6 @@ onMessage(Messages.set_color_scheme, async ({ data, sender }) => {
 function updateBadgeActiveState(tabId: number) {
   chrome.tabs.get(tabId, async function (tab) {
     const isActive = await isUrlWhitelisted(tab.url!)
-    updateIcon(undefined, isActive)
+    updateIcon(undefined, isActive, tabId)
   })
 }
