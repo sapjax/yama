@@ -234,7 +234,7 @@ const shouldMergeForward = (
     return [true, true]
 
   // 17. Katakana noun + する verb  (ガード + する)
-  if (prev.pos === '名詞' && isKatakana(prev.surfaceForm) && pos === '動詞')
+  if (prev.pos === '名詞' && isKatakana(prev.surfaceForm) && surfaceForm === 'する')
     return [true, false]
 
   // 18. fixed idioms list
