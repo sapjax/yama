@@ -202,7 +202,7 @@ const shouldMergeForward = (
 
   // 11. noun + common noun suffix
   if (prev.pos === '名詞' && NOUN_SUFFIXES.includes(surfaceForm)) return [true, false]
-  if (posSub1 === '接尾' && prev.pos === '名詞') return [true, false]
+  if (posSub1 === '接尾' && prev.posSub1 !== '副詞可能' && prev.pos === '名詞') return [true, false]
 
   // 12. Adjective stem + さ／み  (高 + さ, 重 + み)
   if (prev.pos === '形容詞' && NOMINALISERS.has(surfaceForm)) return [true, false]
