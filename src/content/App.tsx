@@ -133,9 +133,7 @@ function App() {
     refs.setPositionReference({
       getBoundingClientRect: () => rect,
     })
-    hideDelay.cancel()
-    showDelay()
-  }, [refs, hideDelay, showDelay, stayEnoughDebounce])
+  }, [refs, stayEnoughDebounce])
 
   const updateWordDebounce = useDebouncedCallback(updateWord, 200)
 
@@ -151,11 +149,12 @@ function App() {
       if (segment) {
         if (isOpen) {
           updateWordDebounce(segment, range, rect)
+          hideDelay.cancel()
+          showDelay()
         } else {
           updateWord(segment, range, rect)
-        }
-      } else {
-        if (isOpen) {
+          hideDelay.cancel()
+          showDelay()
         }
       }
     } else {
