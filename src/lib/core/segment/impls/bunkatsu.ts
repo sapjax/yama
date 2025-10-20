@@ -1,5 +1,5 @@
 /**
- * ref: https://raw.githubusercontent.com/vincelwt/bunkatsu
+ * ref: https://github.com/vincelwt/bunkatsu
  * bunkatsu – learner‑friendly Japanese tokenizer / segmenter
  * ----------------------------------------------------------
  *
@@ -32,7 +32,7 @@
 // ---------------------------------------------------------------------
 import type { SegmentedToken } from '../interface'
 
-type UnmergedToken = {
+export type UnmergedToken = {
   surfaceForm: string
   baseForm: string
   startIndex: number
@@ -116,6 +116,7 @@ const PROGRESSIVES = new Set([
   'ちゃっ',
 ])
 const SENT_ENDING = new Set(['じゃん', 'だよ', 'だね', 'だろ', 'かよ'])
+const COMPOUND_VERB_SUFFIXES = new Set(['出す', '始める', '続ける', '終わる', '込む', '過ぎる', '直す', '変える'])
 const KATA_UNITS = new Set(['キロ', 'メートル', 'センチ', 'グラム'])
 const NUM_UNITS = new Set(['円', '%', '点', '年', '歳', 'kg', 'km'])
 
@@ -136,6 +137,7 @@ const TE_HELPERS = new Set([
   'くる',
   'ください',
   '下さい',
+  'いる',
 ])
 
 const EXPLAN_ENDINGS = new Set(['っぽい', 'みたい', 'らしい'])
@@ -176,6 +178,14 @@ const shouldMergeForward = (
       shouldMerge: true,
       base: prev.baseForm,
     }
+
+  // 2.1. Verb + て particle
+  if (prev.pos === '動詞' && surfaceForm === 'て' && pos === '助詞') {
+    return {
+      shouldMerge: true,
+      base: prev.baseForm,
+    }
+  }
 
   // 3. て + あげる／くれる／…   見 <てあげる>
   if (prev.surfaceForm.endsWith('て') && TE_HELPERS.has(surfaceForm))
@@ -241,6 +251,16 @@ const shouldMergeForward = (
       base: prev.baseForm,
     }
 
+  // ましょ + う
+  if (
+    surfaceForm === 'う'
+    && prev.surfaceForm.endsWith('ましょ')
+  )
+    return {
+      shouldMerge: true,
+      base: prev.baseForm,
+    }
+
   if (AUX_VERBS.includes(surfaceForm) && surfaceForm !== 'う')
     return {
       shouldMerge: true,
@@ -260,6 +280,18 @@ const shouldMergeForward = (
       shouldMerge: true,
       base: prev.baseForm,
     }
+
+  // 10.1. Compound verbs V1-masu + V2  (走り+出す)
+  if (
+    prev.pos === '動詞'
+    && curr.pos === '動詞'
+    && COMPOUND_VERB_SUFFIXES.has(curr.baseForm)
+  ) {
+    return {
+      shouldMerge: true,
+      base: prev.baseForm + curr.baseForm,
+    }
+  }
 
   // 11. noun + common noun suffix  一日 + <中>
   if (prev.pos === '名詞' && NOUN_SUFFIXES.includes(surfaceForm))
@@ -281,6 +313,17 @@ const shouldMergeForward = (
       shouldMerge: true,
       base: prev.baseForm + baseForm,
     }
+
+  // 12.1 Adjective-verb (na-adj) + copula   (静か + だ/だった/じゃない)
+  if (
+    prev.pos === '形容動詞'
+    && (curr.pos === '助動詞' || curr.surfaceForm === 'じゃない')
+  ) {
+    return {
+      shouldMerge: true,
+      base: prev.baseForm, // base form is just the na-adj, e.g. 静か
+    }
+  }
 
   // 13. Honorifics after a name   太郎 <くん>  / アリス <さん>
   if (posSub1 === '接尾' && HONORIFICS.has(surfaceForm))
@@ -344,15 +387,7 @@ const shouldMergeForward = (
       base: prev.baseForm,
     }
 
-  // 18. fixed idioms list
-  const joined = prev.surfaceForm + surfaceForm
-  if (FIXED_IDIOMS.some(id => id.startsWith(joined)))
-    return {
-      shouldMerge: true,
-      base: prev.baseForm + baseForm,
-    }
-
-  // 19. explanatory んだ／んだな
+  // 18. explanatory んだ／んだな
   if (
     /^[んえ]だ/.test(surfaceForm)
     && ['形容詞', '動詞', '名詞'].includes(prev.pos)
@@ -372,20 +407,79 @@ const shouldMergeForward = (
       shouldMerge: false,
     }
 
-  /* Numeric + unit / counter rules remain disabled – re‑enable if you need them
-     -------------------------------------------------------------------------
-     if (isNumeric(prev) && (NUM_UNITS.has(surfaceForm) || KATA_UNITS.has(surfaceForm))) return true
-     if (isNumeric(prev) && COUNTERS.includes(surfaceForm)) return true
-   */
+  // 20. numeric + unit/counter
+  if (
+    isNumeric(prev)
+    && (NUM_UNITS.has(surfaceForm)
+      || KATA_UNITS.has(surfaceForm)
+      || COUNTERS.includes(surfaceForm))
+  ) {
+    return {
+      shouldMerge: true,
+      base: prev.baseForm + baseForm,
+    }
+  }
 
   return {
     shouldMerge: false,
   }
 }
 
+const mergeIdioms = (tokens: UnmergedToken[]): UnmergedToken[] => {
+  const result: UnmergedToken[] = []
+  const MAX_IDIOM_PARTS = 3
+  let i = 0
+  while (i < tokens.length) {
+    let bestMatch: UnmergedToken[] | null = null
+
+    // Find the longest possible idiom match starting at current token `i`
+    for (const idiom of FIXED_IDIOMS) {
+      let temp_j = i
+      let currentSurface = ''
+      const matchedTokens: UnmergedToken[] = []
+
+      while (temp_j < tokens.length && currentSurface.length < idiom.length && matchedTokens.length < MAX_IDIOM_PARTS) {
+        const currentToken = tokens[temp_j]
+        currentSurface += currentToken.surfaceForm
+        matchedTokens.push(currentToken)
+        temp_j++
+      }
+
+      if (currentSurface === idiom) {
+        if (!bestMatch || matchedTokens.length > bestMatch.length) {
+          bestMatch = matchedTokens
+        }
+      }
+    }
+
+    if (bestMatch) {
+      const firstToken = bestMatch[0]
+      const lastToken = bestMatch[bestMatch.length - 1]
+      const mergedIdiom: UnmergedToken = {
+        surfaceForm: bestMatch.map(t => t.surfaceForm).join(''),
+        baseForm: bestMatch.map(t => t.baseForm).join(''),
+        startIndex: firstToken.startIndex,
+        endIndex: lastToken.endIndex,
+        reading: bestMatch.map(t => t.reading).join(''),
+        pos: lastToken.pos, // Heuristic: use the POS of the last token
+        posSub1: lastToken.posSub1, // Heuristic
+        isWordLike: true,
+      }
+      result.push(mergedIdiom)
+      i += bestMatch.length
+    } else {
+      result.push(tokens[i])
+      i++
+    }
+  }
+  return result
+}
+
 const mergeTokens = (tokens: UnmergedToken[]): SegmentedToken[] => {
+  const afterIdiomPass = mergeIdioms(tokens)
+
   const merged: UnmergedToken[] = []
-  for (const tok of tokens) {
+  for (const tok of afterIdiomPass) {
     const prev = merged.at(-1)
     if (prev) {
       const { shouldMerge, base } = shouldMergeForward(prev, tok)

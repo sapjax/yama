@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "fmt": "eslint --fix .",
+    "test": "vitest .",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -68,6 +69,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "~5.9.3",
     "vite": "^7.1.10",
-    "vite-plugin-zip-pack": "^1.2.4"
+    "vite-plugin-zip-pack": "^1.2.4",
+    "vitest": "^3.2.4"
   }
 }
