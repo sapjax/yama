@@ -15,6 +15,10 @@ export function AudioButton({ spelling, audioUrls }: { spelling: string, audioUr
   const intervalRef = useRef<ReturnType<typeof setInterval>>(null)
 
   useEffect(() => {
+    setNextAudio(audioUrls[0])
+  }, [audioUrls])
+
+  useEffect(() => {
     if (!listener) {
       listener = onMessage(Messages.audio_state_changed, ({ data }) => {
         callbacks.forEach(cb => cb(data))
