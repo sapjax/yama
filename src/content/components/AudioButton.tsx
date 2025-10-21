@@ -12,7 +12,7 @@ export function AudioButton({ spelling, audioUrls }: { spelling: string, audioUr
   const [nextAudio, setNextAudio] = useState(audioUrls[0])
   const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing'>('idle')
   const [isVolume1, setIsVolume1] = useState(false)
-  const intervalRef = useRef<ReturnType<typeof setInterval>>(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval>>(null)
 
   useEffect(() => {
     if (!listener) {
