@@ -1,8 +1,8 @@
-import { use, useState, Suspense, memo } from 'react'
+import { use, Suspense, memo } from 'react'
 import { dictAdapters, DictionaryEntry, DictName } from '@/lib/core/dict'
 import { Messages } from '@/lib/message'
 import { sendMessage } from 'webext-bridge/content-script'
-import { Volume2, BookOpen, ExternalLink, Info } from 'lucide-react'
+import { BookOpen, ExternalLink, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AudioButton } from './AudioButton'
 
@@ -55,7 +55,7 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
                         </span>
                       )}
                       {
-                        !!def.audioUrls && <AudioButton key={index} spelling={def.spelling} audioUrls={def.audioUrls} />
+                        !!def.audioUrls && <AudioButton key={`${def.spelling}_${def.reading}_${index}`} spelling={def.spelling} audioUrls={def.audioUrls} />
                       }
                     </>
                   )}
@@ -181,7 +181,7 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-xs leading-tight font-medium text-foreground">{example.text}</p>
                       {example.audioUrl && (
-                        <AudioButton spelling={example.text} audioUrls={[example.audioUrl]} />
+                        <AudioButton key={example.text} spelling={example.text} audioUrls={[example.audioUrl]} />
                       )}
                     </div>
                     {example.translation && <p className="mt-0.5 text-xs leading-tight text-muted-foreground">{example.translation}</p>}
@@ -276,7 +276,7 @@ function PitchAccents({ spelling, pitchAccents }: {
       } as React.CSSProperties}
     >
       <div dangerouslySetInnerHTML={{ __html: accent.html }}></div>
-      <AudioButton spelling={spelling} audioUrls={[accent.audioUrl]} />
+      <AudioButton key={`${spelling}_${accent.audioUrl}`} spelling={spelling} audioUrls={[accent.audioUrl]} />
     </div>
   )
 }
