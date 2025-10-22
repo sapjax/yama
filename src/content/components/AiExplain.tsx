@@ -55,6 +55,7 @@ export function AiExplain({ word, range, ref }: { word: string, range: Range | n
           className="absolute top-[6px] right-0.5 inline-flex size-7
         shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-all outline-none hover:bg-accent  hover:text-accent-foreground dark:hover:bg-accent/50"
           role="button"
+          title="AI Explain"
         >
           <Bot
             strokeWidth={2}

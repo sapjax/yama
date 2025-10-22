@@ -63,7 +63,7 @@ function App() {
 
   const { refs, floatingStyles, middlewareData, context } = useFloating({
     placement: 'bottom',
-    strategy: 'absolute',
+    strategy: 'fixed',
     open: isOpen,
     transform: true,
     onOpenChange: setIsOpen,
@@ -86,10 +86,10 @@ function App() {
     ],
   })
 
-  const { styles } = useTransitionStyles(context)
+  const { styles: transitionStyles } = useTransitionStyles(context)
 
   const dismiss = useDismiss(context, {
-    enabled: !isManuallyPositioned, // Use combined state
+    enabled: !isPinned,
   })
   const { getFloatingProps } = useInteractions([
     dismiss,
@@ -130,9 +130,9 @@ function App() {
 
   // panel open status
   const hideDelay = useDebouncedCallback(useCallback(() => {
-    if (isManuallyPositioned) return // Use combined state
+    if (isPinned) return
     setIsOpen(false)
-  }, [isManuallyPositioned]), 500)
+  }, [isPinned]), 500)
 
   const showDelay = useDebouncedCallback(useCallback(() => {
     setIsOpen(true)
@@ -182,23 +182,20 @@ function App() {
         }
       }
     } else {
-      if (!isManuallyPositioned) { // Use combined state
+      if (!isPinned) {
         refs.setPositionReference(null)
       }
       showDelay.cancel()
       hideDelay()
     }
-  }, [isOpen, updateWord, updateWordDebounce, refs, hideDelay, showDelay, isManuallyPositioned])
+  }, [isOpen, updateWord, updateWordDebounce, refs, hideDelay, showDelay, isPinned])
 
-  const onPanelMouseEnter = () => {
+  const onPanelMouseEnter = useCallback(() => {
     hideDelay.cancel()
     updateWordDebounce.cancel()
-  }
-  const onPanelMouseLeave = () => {
-    if (!isManuallyPositioned) { // Use combined state
-      hideDelay()
-    }
-  }
+  }, [hideDelay, updateWordDebounce])
+
+  const onPanelMouseLeave = hideDelay
 
   useEffect(() => {
     document.addEventListener('mousemove', onMouseMove)
@@ -208,7 +205,7 @@ function App() {
   }, [onMouseMove])
 
   // Drag and Pin logic
-  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  const onDragStart = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!isPinned) return
 
     // Ignore mousedown on buttons within the drag handle
@@ -231,7 +228,7 @@ function App() {
     e.preventDefault()
   }, [isPinned, panelRef, position])
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
+  const onDragging = useCallback((e: MouseEvent) => {
     if (!isDragging.current || !isPinned) return
     if (!panelRef.current) return
 
@@ -244,7 +241,7 @@ function App() {
     panelRef.current.style.transform = `translate(${newX}px, ${newY}px)`
   }, [isPinned])
 
-  const handleMouseUp = useCallback(() => {
+  const onDragEnd = useCallback(() => {
     if (!isDragging.current) return
     isDragging.current = false
 
@@ -253,13 +250,13 @@ function App() {
   }, [])
 
   useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
+    window.addEventListener('mousemove', onDragging)
+    window.addEventListener('mouseup', onDragEnd)
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
+      window.removeEventListener('mousemove', onDragging)
+      window.removeEventListener('mouseup', onDragEnd)
     }
-  }, [handleMouseMove, handleMouseUp])
+  }, [onDragging, onDragEnd])
 
   const togglePin = () => {
     const newIsPinned = !isPinned
@@ -349,11 +346,8 @@ function App() {
         inert={!isOpen}
         style={{
           ...floatingPositionStyle,
-          ...(!isManuallyPositioned && styles),
-          display: isOpen ? 'opacity-100' : 'opacity-0',
-          visibility: !isManuallyPositioned && middlewareData.hide?.referenceHidden
-            ? 'hidden'
-            : 'visible',
+          ...(!isPinned && transitionStyles),
+          opacity: isOpen ? 1 : 0,
         }}
         {...floatingProps}
         onMouseEnter={onPanelMouseEnter}
@@ -374,7 +368,7 @@ function App() {
           <div
             className="relative border-b border-border p-2"
             style={{ cursor: isPinned ? 'move' : 'default' }}
-            onMouseDown={handleMouseDown}
+            onMouseDown={onDragStart}
             onMouseEnter={() => setIsHeaderHovered(true)}
             onMouseLeave={() => setIsHeaderHovered(false)}
           >
