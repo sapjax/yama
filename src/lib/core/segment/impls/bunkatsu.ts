@@ -91,7 +91,7 @@ const NOUN_SUFFIXES = [
 
 const HONORIFIC_PREFIXES = ['ご', 'お']
 const PREFIXES = ['再', '未', '超', '非', '無', '最', '新', '多']
-const COUNTERS = ['人', '枚', '本', '匹', 'つ', '個', '回', '年', '歳', '着']
+const COUNTERS = ['つ']
 const FIXED_IDIOMS = [
   'とりあえず',
   'まったくもう',
@@ -125,8 +125,7 @@ const KATA_UNITS = new Set(['キロ', 'メートル', 'センチ', 'グラム'])
 const NUM_UNITS = new Set(['円', '%', '点', '年', '歳', 'kg', 'km'])
 
 const isKatakana = (s: string) => /^[ァ-ヶー－]+$/.test(s)
-const isNumeric = (t: UnmergedToken) =>
-  t.pos === '名詞' && t.posSub1 === '数詞'
+const isNumeric = (t: UnmergedToken) => t.pos === 'UNK' && /^[1-9]$/.test(t.surfaceForm)
 
 // ------------------------------------------------------------------
 // 3. single decision function – ONE return per rule
@@ -414,13 +413,11 @@ const shouldMergeForward = (
   // 20. numeric + unit/counter
   if (
     isNumeric(prev)
-    && (NUM_UNITS.has(surfaceForm)
-      || KATA_UNITS.has(surfaceForm)
-      || COUNTERS.includes(surfaceForm))
+    && COUNTERS.includes(surfaceForm)
   ) {
     return {
       shouldMerge: true,
-      base: prev.baseForm + baseForm,
+      base: (prev.baseForm || prev.surfaceForm) + baseForm,
     }
   }
 
