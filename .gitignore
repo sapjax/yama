@@ -13,9 +13,6 @@ release
 dist-ssr
 *.local
 
-GEMINI.md
-workflow
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
