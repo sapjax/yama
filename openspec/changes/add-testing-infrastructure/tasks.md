@@ -1,15 +1,15 @@
 ## 1. Configuration
 
-- [ ] 1.1. Configure `vite.config.ts` to include a `test` property for `vitest` environment settings.
-- [ ] 1.2. Update `tsconfig.json` to include `vitest/globals` in the `types` array to provide global type definitions for the test environment.
-- [ ] 1.3. Add a `test` script to `package.json` that executes `vitest`.
+- [x] 1.1. Configure `vite.config.ts` to include a `test` property for `vitest` environment settings.
+- [x] 1.2. Update `tsconfig.json` to include `vitest/globals` in the `types` array to provide global type definitions for the test environment.
+- [x] 1.3. Add a `test` script to `package.json` that executes `vitest`.
 
 ## 2. Initial Test Implementation
 
-- [ ] 2.1. Identify a simple, pure function within the codebase for the initial test (e.g., `src/lib/utils/className.ts`).
-- [ ] 2.2. Create the first test file at the corresponding location (e.g., `src/lib/utils/className.test.ts`).
-- [ ] 2.3. Write a basic unit test using `describe`, `it`, and `expect` to verify the function's behavior.
-- [ ] 2.4. Run the new test script and confirm that the test passes.
+- [x] 2.1. Identify a simple, pure function within the codebase for the initial test (e.g., `src/lib/utils/className.ts`).
+- [x] 2.2. Create the first test file at the corresponding location (e.g., `src/lib/utils/className.test.ts`).
+- [x] 2.3. Write a basic unit test using `describe`, `it`, and `expect` to verify the function's behavior.
+- [x] 2.4. Run the new test script and confirm that the test passes.
 
 ## 3. Documentation and CI (Optional Follow-up)
 
