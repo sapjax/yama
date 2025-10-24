@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback, useEffectEvent } from 'react'
 import { useDebounce, useDebouncedCallback } from 'use-debounce'
 import { FloatingArrow, arrow, flip, hide, offset, shift, size, useFloating, useDismiss, useInteractions, useTransitionStyles } from '@floating-ui/react'
 import { sendMessage } from 'webext-bridge/content-script'
@@ -61,7 +61,7 @@ function App() {
   const mousePointerRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 })
   const arrowRef = useRef<SVGSVGElement>(null)
 
-  const { refs, floatingStyles, middlewareData, context } = useFloating({
+  const { refs, floatingStyles, context } = useFloating({
     placement: 'bottom',
     strategy: 'fixed',
     open: isOpen,
@@ -109,13 +109,11 @@ function App() {
   }, [panelRef, context, isManuallyPositioned])
 
   // handle stay events
-  const onStayEnough = useCallback(() => {
+  const stayEnoughDebounce = useDebouncedCallback(useEffectEvent(() => {
     if (highlightRef.current?.getColorKey(curWord) === 'UnSeen') {
       highlightRef.current?.markWord(curWord, 'Searched', curRange)
     }
-  }, [curWord, curRange])
-
-  const stayEnoughDebounce = useDebouncedCallback(onStayEnough, 5000)
+  }), 5000)
 
   useEffect(() => {
     if (isOpen) {
@@ -129,14 +127,14 @@ function App() {
   }, [isOpen, stayEnoughDebounce, curWord])
 
   // panel open status
-  const hideDelay = useDebouncedCallback(useCallback(() => {
+  const hideDelay = useDebouncedCallback(useEffectEvent(() => {
     if (isPinned) return
     setIsOpen(false)
-  }, [isPinned]), 500)
+  }), 500)
 
-  const showDelay = useDebouncedCallback(useCallback(() => {
+  const showDelay = useDebouncedCallback(useEffectEvent(() => {
     setIsOpen(true)
-  }, []), 200)
+  }), 200)
 
   const onPanelMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isDragging.current) return
@@ -145,7 +143,7 @@ function App() {
     hideDelay.cancel()
   }
 
-  const updateWord = useCallback((segment: SegmentedToken, range: Range, rect: DOMRect) => {
+  const updateWord = useEffectEvent((segment: SegmentedToken, range: Range, rect: DOMRect) => {
     setIsDetached(false) // Finding a new word re-attaches the panel
     stayEnoughDebounce.cancel()
     setCurWord(segment.baseForm)
@@ -155,11 +153,12 @@ function App() {
         getBoundingClientRect: () => rect,
       })
     }
-  }, [refs, stayEnoughDebounce, isPinned])
+  })
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const updateWordDebounce = useDebouncedCallback(updateWord, 200)
 
-  const onMouseMove = useCallback(async (e: MouseEvent) => {
+  const onMouseMove = useEffectEvent(async (e: MouseEvent) => {
     if (isDragging.current) return
 
     const highlighter = highlightRef.current
@@ -188,7 +187,7 @@ function App() {
       showDelay.cancel()
       hideDelay()
     }
-  }, [isOpen, updateWord, updateWordDebounce, refs, hideDelay, showDelay, isPinned])
+  })
 
   const onPanelMouseEnter = useCallback(() => {
     hideDelay.cancel()
@@ -202,7 +201,7 @@ function App() {
     return () => {
       document.removeEventListener('mousemove', onMouseMove)
     }
-  }, [onMouseMove])
+  }, [])
 
   // Drag and Pin logic
   const onDragStart = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -228,7 +227,7 @@ function App() {
     e.preventDefault()
   }, [isPinned, panelRef, position])
 
-  const onDragging = useCallback((e: MouseEvent) => {
+  const onDragging = useEffectEvent((e: MouseEvent) => {
     if (!isDragging.current || !isPinned) return
     if (!panelRef.current) return
 
@@ -239,15 +238,15 @@ function App() {
 
     // Update style directly to avoid re-renders
     panelRef.current.style.transform = `translate(${newX}px, ${newY}px)`
-  }, [isPinned])
+  })
 
-  const onDragEnd = useCallback(() => {
+  const onDragEnd = useEffectEvent(() => {
     if (!isDragging.current) return
     isDragging.current = false
 
     // Sync React state with the final position
     setPosition(latestPosition.current)
-  }, [])
+  })
 
   useEffect(() => {
     window.addEventListener('mousemove', onDragging)
@@ -256,7 +255,7 @@ function App() {
       window.removeEventListener('mousemove', onDragging)
       window.removeEventListener('mouseup', onDragEnd)
     }
-  }, [onDragging, onDragEnd])
+  }, [])
 
   const togglePin = () => {
     const newIsPinned = !isPinned
@@ -277,51 +276,51 @@ function App() {
   }
 
   // shortcuts
+  const onKeyDown = useEffectEvent((e: KeyboardEvent) => {
+    if (!curWord) return
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+
+    const shortcuts = settings?.shortcuts
+    if (!shortcuts) return
+    if (!isOpen) return
+
+    let matched = false
+    switch (e.key) {
+      case shortcuts.tracking:
+        highlightRef.current?.markWord(curWord, 'Tracking', curRange)
+        matched = true
+        break
+      case shortcuts.ignored:
+        highlightRef.current?.markWord(curWord, 'Ignored', curRange)
+        matched = true
+        break
+      case shortcuts.never_forget:
+        highlightRef.current?.markWord(curWord, 'Never_Forget', curRange)
+        matched = true
+        break
+      case shortcuts.ai_explain:
+        aiExplainRef.current?.handleExplain()
+        matched = true
+        break
+      case shortcuts.pronounce:
+        const audioButton = containerRef.current?.querySelector('[data-pronounce]') as HTMLElement
+        audioButton?.click()
+        matched = true
+        break
+    }
+
+    if (matched) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+  })
+
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!curWord) return
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-
-      const shortcuts = settings?.shortcuts
-      if (!shortcuts) return
-      if (!isOpen) return
-
-      let matched = false
-      switch (e.key) {
-        case shortcuts.tracking:
-          highlightRef.current?.markWord(curWord, 'Tracking', curRange)
-          matched = true
-          break
-        case shortcuts.ignored:
-          highlightRef.current?.markWord(curWord, 'Ignored', curRange)
-          matched = true
-          break
-        case shortcuts.never_forget:
-          highlightRef.current?.markWord(curWord, 'Never_Forget', curRange)
-          matched = true
-          break
-        case shortcuts.ai_explain:
-          aiExplainRef.current?.handleExplain()
-          matched = true
-          break
-        case shortcuts.pronounce:
-          const audioButton = containerRef.current?.querySelector('[data-pronounce]') as HTMLElement
-          audioButton?.click()
-          matched = true
-          break
-      }
-
-      if (matched) {
-        e.preventDefault()
-        e.stopPropagation()
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('keydown', onKeyDown)
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('keydown', onKeyDown)
     }
-  }, [curWord, curRange, settings, isOpen])
+  }, [])
 
   const floatingProps = isManuallyPositioned ? {} : getFloatingProps()
 
