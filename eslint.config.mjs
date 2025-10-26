@@ -3,6 +3,7 @@ import tsParser from '@typescript-eslint/parser'
 import stylistic from '@stylistic/eslint-plugin'
 import reactHooks from 'eslint-plugin-react-hooks'
 import tailwind from 'eslint-plugin-tailwindcss'
+import css from '@eslint/css'
 
 export default [
   {
@@ -45,7 +46,6 @@ export default [
       },
     },
   },
-
   {
     files: [
       'scripts/**/*.{js,ts}',
@@ -72,5 +72,15 @@ export default [
   },
   {
     ignores: ['dist/**', 'node_modules/**', 'src/components/ui/**'],
+  },
+  {
+    files: ['**/*.css'],
+    plugins: {
+      css,
+    },
+    language: 'css/css',
+    rules: {
+      'css/no-duplicate-imports': 'error',
+    },
   },
 ]
