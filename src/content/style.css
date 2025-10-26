@@ -24,3 +24,18 @@
   --text-xl: calc(1.25 * var(--hem));
   --text-2xl: calc(1.5 * var(--hem));
 }
+
+.ai-loading {
+  border: 2px solid transparent;
+  background: linear-gradient(var(--muted) 0 0) padding-box,
+    conic-gradient(from var(--angle), red, yellow, green) border-box;
+  animation: rotate 2s linear infinite;
+  animation-play-state: running;
+}
+
+
+@keyframes rotate {
+  to {
+    --angle: 1turn;
+  }
+}

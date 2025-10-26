@@ -405,7 +405,7 @@ function App() {
           }}
           ref={containerRef}
         >
-          {!!settings?.ai && <AiExplain word={curWord} range={curRange} ref={aiExplainRef} />}
+          {!!settings?.ai && <AiExplain word={curWord} range={curRange} ref={aiExplainRef} panelRef={panelRef} />}
           {!!curWord && dictNames.map(dictName => (
             <ErrorBoundary
               key={dictName}

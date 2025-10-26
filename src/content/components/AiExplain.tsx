@@ -1,7 +1,7 @@
+import { useEffect, useState, useCallback, useImperativeHandle, useEffectEvent, Ref, lazy, Suspense } from 'react'
 import { Messages } from '@/lib/message'
 import { getSentenceFromRange, cn } from '@/lib/utils'
 import { Bot } from 'lucide-react'
-import { useEffect, useState, useCallback, useImperativeHandle, Ref, lazy, Suspense } from 'react'
 import { sendMessage, onMessage } from 'webext-bridge/content-script'
 import markdownStyle from '../../assets/markdown.css?inline'
 
@@ -11,7 +11,14 @@ export type AiExplainHandler = {
   handleExplain: () => void
 }
 
-export function AiExplain({ word, range, ref }: { word: string, range: Range | null, ref?: Ref<AiExplainHandler> }) {
+type Props = {
+  word: string
+  range: Range | null
+  ref?: Ref<AiExplainHandler>
+  panelRef: React.RefObject<HTMLDivElement | null>
+}
+
+export function AiExplain({ word, range, ref, panelRef }: Props) {
   const [explanation, setExplanation] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -27,10 +34,11 @@ export function AiExplain({ word, range, ref }: { word: string, range: Range | n
   const handleExplain = useCallback(async () => {
     if (!range || loading) return
     setLoading(true)
+    panelRef.current?.classList.add('ai-loading')
     setExplanation('')
     const sentence = getSentenceFromRange(range)!
     sendMessage(Messages.ai_explain_stream_start, { sentence, word }, 'background')
-  }, [range, word, loading])
+  }, [range, word, loading, panelRef])
 
   useEffect(() => {
     const chunkSub = onMessage(Messages.ai_explain_stream_chunk, ({ data }) => {
@@ -38,11 +46,30 @@ export function AiExplain({ word, range, ref }: { word: string, range: Range | n
     })
     const endSub = onMessage(Messages.ai_explain_stream_end, () => {
       setLoading(false)
+      panelRef.current?.classList.remove('ai-loading')
     })
 
     return () => {
       chunkSub()
       endSub()
+    }
+  }, [panelRef])
+
+  // Register CSS custom property metadata at runtime.
+  // Note: you cannot declare an @property rule inside an element's inline `style` attribute.
+  // The JS API `CSS.registerProperty` is the correct way to register property metadata from script.
+  useEffect(() => {
+    if (typeof window.CSS !== 'undefined' && typeof window.CSS.registerProperty === 'function') {
+      try {
+        window.CSS.registerProperty({
+          name: '--angle',
+          syntax: '<angle>',
+          inherits: true,
+          initialValue: '0turn',
+        })
+      } catch (e) {
+        // ignore: property may already be registered or the call may fail on some browsers
+      }
     }
   }, [])
 
@@ -59,9 +86,10 @@ export function AiExplain({ word, range, ref }: { word: string, range: Range | n
         >
           <Bot
             strokeWidth={2}
+            aria-disabled={loading}
             className={cn(
               'size-4 rounded-sm',
-              loading ? 'animate-spin' : '',
+              loading && 'opacity-50',
             )}
             color="currentColor"
             onClick={handleExplain}
