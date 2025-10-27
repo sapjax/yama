@@ -56,13 +56,13 @@ export function setIconTheme(theme: ColorScheme = 'light') {
   cachedTheme = theme
 }
 
-export function updateIcon(theme: ColorScheme = 'light', isActive: boolean = false, tabId?: number) {
+export function updateIcon(theme?: ColorScheme, isActive: boolean = false, tabId?: number) {
   if (theme) {
     cachedTheme = theme
   }
   const size = 32
   const canvas = new OffscreenCanvas(size, size)
-  const context = drawIcon(canvas, size, theme, isActive)
+  const context = drawIcon(canvas, size, cachedTheme ?? theme, isActive)
 
   const imageData = context.getImageData(0, 0, size, size)
   chrome.action.setIcon({ imageData, tabId })
