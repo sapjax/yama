@@ -254,10 +254,10 @@ const shouldMergeForward = (
       base: prev.baseForm,
     }
 
-  // ましょ + う
+  // <ましょ/でしょ> + う
   if (
     surfaceForm === 'う'
-    && prev.surfaceForm.endsWith('ましょ')
+    && (prev.surfaceForm.endsWith('ましょ') || prev.surfaceForm.endsWith('でしょ'))
   )
     return {
       shouldMerge: true,
