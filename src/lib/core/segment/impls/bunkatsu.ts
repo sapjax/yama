@@ -329,6 +329,19 @@ const shouldMergeForward = (
     }
   }
 
+  // 12.2 Noun + な (e.g. 静か + な)
+  if (
+    prev.pos === '名詞'
+    && prev.posSub1 === '形容動詞語幹'
+    && curr.surfaceForm === 'な'
+    && curr.pos === '助動詞'
+  ) {
+    return {
+      shouldMerge: true,
+      base: prev.baseForm,
+    }
+  }
+
   // 13. Honorifics after a name   太郎 <くん>  / アリス <さん>
   if (posSub1 === '接尾' && HONORIFICS.has(surfaceForm))
     return {

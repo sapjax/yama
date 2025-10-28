@@ -331,4 +331,15 @@ describe('bunkatsu mergeTokens', () => {
     expect(result).toHaveLength(1)
     expect(result[0].surfaceForm).toBe('ご飯')
   })
+
+  it('should merge noun + na but preserve noun baseform', () => {
+    const tokens: UnmergedToken[] = [
+      createToken('静か', '名詞', '形容動詞語幹', '静か'),
+      createToken('な', '助動詞', '*', 'だ'),
+    ]
+    const result = mergeTokens(tokens)
+    expect(result).toHaveLength(1)
+    expect(result[0].surfaceForm).toBe('静かな')
+    expect(result[0].baseForm).toBe('静か')
+  })
 })
