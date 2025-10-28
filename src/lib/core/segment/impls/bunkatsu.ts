@@ -98,17 +98,13 @@ const HONORIFIC_PREFIXES = ['ご', 'お']
 const PREFIXES = ['再', '未', '超', '非', '無', '最', '新', '多']
 const COUNTERS = ['つ']
 const FIXED_IDIOMS = [
-  'とりあえず',
   'まったくもう',
-  'どうしても',
-  'まさかの',
-  'いい加減',
-  'なんとなく',
   '気になる',
   'なんだ',
   'えっと',
   '気がつく',
   '気がつき',
+  'どうしたの',
 ]
 
 // extra low‑hanging fruit ------------------------------------------
@@ -433,7 +429,7 @@ const shouldMergeForward = (
 
 const mergeIdioms = (tokens: UnmergedToken[]): UnmergedToken[] => {
   const result: UnmergedToken[] = []
-  const MAX_IDIOM_PARTS = 3
+  const MAX_IDIOM_PARTS = 4
   let i = 0
   while (i < tokens.length) {
     let bestMatch: UnmergedToken[] | null = null
@@ -463,7 +459,7 @@ const mergeIdioms = (tokens: UnmergedToken[]): UnmergedToken[] => {
       const lastToken = bestMatch[bestMatch.length - 1]
       const mergedIdiom: UnmergedToken = {
         surfaceForm: bestMatch.map(t => t.surfaceForm).join(''),
-        baseForm: bestMatch.map(t => t.baseForm).join(''),
+        baseForm: bestMatch.map(t => t.surfaceForm).join(''),
         startIndex: firstToken.startIndex,
         endIndex: lastToken.endIndex,
         reading: bestMatch.map(t => t.reading).join(''),
