@@ -58,6 +58,11 @@ const AUX_VERBS = [
   'た',
   'てる',
   'てた',
+
+  // examples
+  'たり',
+  'だり',
+
   // negative
   'ない',
   'なかった',
