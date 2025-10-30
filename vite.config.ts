@@ -1,3 +1,5 @@
+/// <reference types="vitest/config" />
+
 import path from 'node:path'
 import { crx } from '@crxjs/vite-plugin'
 import react from '@vitejs/plugin-react'
@@ -41,5 +43,9 @@ export default defineConfig({
         /chrome-extension:\/\//,
       ],
     },
+  },
+  test: {
+    environment: 'happy-dom',
+    globals: true,
   },
 })

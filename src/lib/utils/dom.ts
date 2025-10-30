@@ -1,5 +1,5 @@
 export function getSentenceFromRange(range: Range, maxLength = 40): string | undefined {
-  const terminators = ['。\n', '。 ', '。 ', '！', '？', '．', '!', '?', '\n']
+  const terminators = ['！', '？', '．', '!', '?', '\n', '。', '.']
   const startNode = range.startContainer
 
   let contextElement = startNode.parentElement
