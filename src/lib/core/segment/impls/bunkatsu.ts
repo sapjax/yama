@@ -392,12 +392,6 @@ const shouldMergeForward = (
       base: baseForm,
     }
 
-  if (prev.pos === '接頭詞' && ['名詞', '動詞'].includes(pos))
-    return {
-      shouldMerge: true,
-      base: prev.baseForm + baseForm,
-    }
-
   // 17. Katakana noun + する verb  (ガード + する)
   if (prev.pos === '名詞' && isKatakana(prev.surfaceForm) && surfaceForm === 'する')
     return {
