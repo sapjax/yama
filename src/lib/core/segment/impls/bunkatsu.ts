@@ -267,7 +267,7 @@ const shouldMergeForward = (
       base: prev.baseForm,
     }
 
-  if (AUX_VERBS.includes(surfaceForm) && surfaceForm !== 'う')
+  if (AUX_VERBS.includes(surfaceForm) && surfaceForm !== 'う' && prev.isWordLike)
     return {
       shouldMerge: true,
       base: prev.baseForm,
@@ -307,7 +307,11 @@ const shouldMergeForward = (
     }
 
   // 小説 + <家>
-  if (posSub1 === '接尾' && prev.posSub1 !== '副詞可能' && prev.pos === '名詞')
+  if (posSub1 === '接尾'
+    && !HONORIFICS.has(surfaceForm)
+    && prev.pos === '名詞'
+    && prev.posSub1 !== '副詞可能'
+  )
     return {
       shouldMerge: true,
       base: prev.baseForm + baseForm,
