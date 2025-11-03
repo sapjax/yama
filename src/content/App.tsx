@@ -109,6 +109,7 @@ function App() {
   }, [panelRef, context, isManuallyPositioned])
 
   // handle stay events
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const stayEnoughDebounce = useDebouncedCallback(useEffectEvent(() => {
     if (highlightRef.current?.getColorKey(curWord) === 'UnSeen') {
       highlightRef.current?.markWord(curWord, 'Searched', curRange)
@@ -127,11 +128,13 @@ function App() {
   }, [isOpen, stayEnoughDebounce, curWord])
 
   // panel open status
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const hideDelay = useDebouncedCallback(useEffectEvent(() => {
     if (isPinned) return
     setIsOpen(false)
   }), 500)
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const showDelay = useDebouncedCallback(useEffectEvent(() => {
     setIsOpen(true)
   }), 200)
@@ -300,6 +303,7 @@ function App() {
         break
       case shortcuts.ai_explain:
         aiExplainRef.current?.handleExplain()
+        containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
         matched = true
         break
       case shortcuts.pronounce:
@@ -337,7 +341,7 @@ function App() {
     <>
       <div ref={styleContainerRef}></div>
       <div
-        className="isolate z-[1000000000] w-96 rounded-lg border-2 border-border bg-muted text-card-foreground shadow-xl selection:bg-primary selection:text-primary-foreground"
+        className="isolate z-1000000000 w-96 rounded-lg border-2 border-border bg-muted text-card-foreground shadow-xl selection:bg-primary selection:text-primary-foreground"
         ref={(node) => {
           refs.setFloating(node)
           panelRef.current = node

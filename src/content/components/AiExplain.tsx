@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useImperativeHandle, useEffectEvent, Ref, lazy, Suspense } from 'react'
+import { useEffect, useState, useCallback, useImperativeHandle, Ref, lazy, Suspense } from 'react'
 import { Messages } from '@/lib/message'
 import { getSentenceFromRange, cn } from '@/lib/utils'
 import { Bot } from 'lucide-react'
@@ -96,7 +96,7 @@ export function AiExplain({ word, range, ref, panelRef }: Props) {
           />
         </div>
       )}
-      {explanation && (
+      {(loading || explanation) && (
         <div className="mb-4">
           <div
             className="mb-2 flex items-center gap-1.5 pb-1 text-primary"
@@ -106,17 +106,15 @@ export function AiExplain({ word, range, ref, panelRef }: Props) {
               AI Explain
             </span>
           </div>
-          {explanation && (
-            <div className="space-y-2 rounded-md border border-border bg-card p-2.5 text-xs text-card-foreground">
-              <div className="markdown-body">
-                <Suspense fallback={<div>Loading...</div>}>
-                  <Markdown options={{ forceBlock: true, enforceAtxHeadings: true }}>
-                    {explanation}
-                  </Markdown>
-                </Suspense>
-              </div>
+          <div className="space-y-2 rounded-md border border-border bg-card p-2.5 text-xs text-card-foreground">
+            <div className="markdown-body">
+              <Suspense fallback={<div>Loading...</div>}>
+                <Markdown options={{ forceBlock: true, enforceAtxHeadings: true }}>
+                  {explanation || (loading ? 'Thinking...' : '')}
+                </Markdown>
+              </Suspense>
             </div>
-          )}
+          </div>
         </div>
       )}
       <style>{markdownStyle}</style>
