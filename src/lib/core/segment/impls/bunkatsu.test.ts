@@ -164,16 +164,6 @@ describe('bunkatsu mergeTokens', () => {
     expect(result[0].surfaceForm).toBe('再開')
   })
 
-  it('should merge light-verb compounds (すること)', () => {
-    const tokens: UnmergedToken[] = [
-      createToken('する', '動詞', '自立', 'する'),
-      createToken('こと', '名詞', '非自立', 'こと'),
-    ]
-    const result = mergeTokens(tokens)
-    expect(result).toHaveLength(1)
-    expect(result[0].surfaceForm).toBe('すること')
-  })
-
   it('should merge sentence-ending combos (最高じゃん)', () => {
     const tokens: UnmergedToken[] = [
       createToken('最高', '名詞', '一般', '最高'),

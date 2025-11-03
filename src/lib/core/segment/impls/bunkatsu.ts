@@ -200,12 +200,12 @@ const shouldMergeForward = (
       base: prev.baseForm,
     }
 
-  // 4. Light‑verb compounds (verb+こと/もの/ところ)
-  if (prev.pos === '動詞' && ['こと', 'もの', 'ところ'].includes(surfaceForm))
-    return {
-      shouldMerge: true,
-      base: prev.baseForm + baseForm,
-    }
+  // // 4. Light‑verb compounds (verb+こと/もの/ところ)
+  // if (prev.pos === '動詞' && ['こと', 'もの', 'ところ'].includes(surfaceForm))
+  //   return {
+  //     shouldMerge: true,
+  //     base: prev.baseForm,
+  //   }
 
   // 5. Sentence‑ending combos  e.g. 最高 <じゃん>
   if (SENT_ENDING.has(surfaceForm) && prev.pos !== '記号')
