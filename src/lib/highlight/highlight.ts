@@ -302,26 +302,12 @@ class Highlighter {
 
           // when remove node, remove highlight range
           if (mutation.removedNodes.length > 0) {
-            let oldRoot: HTMLElement
             mutation.removedNodes.forEach((node) => {
-              if (node.nodeName === 'YAMA-ROOT') {
-                oldRoot = node as HTMLElement
-              }
               if (this.highlightContainerMap.has(node)) {
                 this.clearNodeRanges(node)
                 this.highlightContainerMap.delete(node)
               }
             })
-
-            // for some sites like calibre reader server
-            // it uses `document.body.innerHTML` when page changes between book thumb and book contents
-            // which will cause word-hunter card node removed
-            // we need to clone the removed root node and append to body, to make card work again
-            if (oldRoot!) {
-              const root = oldRoot.cloneNode(true)
-              oldRoot.remove()
-              document.body.appendChild(root)
-            }
           }
         }
       })
