@@ -2,7 +2,10 @@ export function getSentenceFromRange(range: Range, maxLength = 40): string | und
   const terminators = ['！', '？', '．', '!', '?', '\n', '。', '.']
   const startNode = range.startContainer
 
-  let contextElement = startNode.parentElement
+  let contextElement = startNode.nodeType === Node.ELEMENT_NODE
+    ? startNode as Element
+    : startNode.parentElement
+
   while (contextElement) {
     const display = window.getComputedStyle(contextElement).display
     if (['block', 'flex', 'grid'].includes(display) || ['P', 'DIV', 'ARTICLE', 'SECTION', 'LI'].includes(contextElement.tagName)) {
