@@ -4,7 +4,7 @@
  */
 const youtubeSubtitleStyle = `
   .ytp-delhi-modern .caption-window.ytp-caption-window-bottom {
-    margin-bottom: 3.5% !important;
+    margin-bottom: calc(var(--yt-delhi-bottom-controls-height, 72px) + 2px) !important;
   }
 `
 
