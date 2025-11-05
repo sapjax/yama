@@ -1,5 +1,6 @@
 import { getContrastingColor, rgbStringToHsva } from '@uiw/color-convert'
 import { AppSettings, defaultColors, defaultReviewColor, SETTINGS_KEY, type ColorSettings, type ReviewColorSettings } from '@/lib/settings'
+import { extraStyles } from './extraStyles'
 
 type Colors = ColorSettings & ReviewColorSettings
 type ColorKey = keyof Colors
@@ -33,7 +34,7 @@ function createCSSHighlights() {
 
 function genMarkStyles(colors: Colors, markStyle: typeof MarkStyles[number] = 'text') {
   if (markStyle === 'none') {
-    return ''
+    return extraStyles
   }
 
   return Object.entries(colors)
@@ -107,7 +108,7 @@ function genMarkStyles(colors: Colors, markStyle: typeof MarkStyles[number] = 't
       }
 
       return cssVarDefinition + '\n' + styleMappings[markStyle]
-    }).join('\n')
+    }).join('\n') + '\n' + extraStyles
 }
 
 function injectColors(settings: AppSettings) {
