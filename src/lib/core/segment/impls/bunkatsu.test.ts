@@ -101,17 +101,6 @@ describe('bunkatsu mergeTokens', () => {
     expect(result[0].baseForm).toBe('静かだ')
   })
 
-  it('should merge compound verbs (走り出す)', () => {
-    const tokens: UnmergedToken[] = [
-      createToken('走り', '動詞', '自立', '走る'),
-      createToken('出す', '動詞', '非自立', '出す'),
-    ]
-    const result = mergeTokens(tokens)
-    expect(result).toHaveLength(1)
-    expect(result[0].surfaceForm).toBe('走り出す')
-    expect(result[0].baseForm).toBe('走る出す') // As per current logic
-  })
-
   it('should merge numbers with counters (100円)', () => {
     const tokens: UnmergedToken[] = [
       createToken('100', '名詞', '数詞'),

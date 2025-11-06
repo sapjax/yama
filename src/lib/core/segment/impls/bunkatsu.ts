@@ -288,16 +288,16 @@ const shouldMergeForward = (
     }
 
   // 10.1. Compound verbs V1-masu + V2  (走り+出す)
-  if (
-    prev.pos === '動詞'
-    && curr.pos === '動詞'
-    && COMPOUND_VERB_SUFFIXES.has(curr.baseForm)
-  ) {
-    return {
-      shouldMerge: true,
-      base: prev.baseForm + curr.baseForm,
-    }
-  }
+  // if (
+  //   prev.pos === '動詞'
+  //   && curr.pos === '動詞'
+  //   && COMPOUND_VERB_SUFFIXES.has(curr.baseForm)
+  // ) {
+  //   return {
+  //     shouldMerge: true,
+  //     base: prev.baseForm + curr.baseForm,
+  //   }
+  // }
 
   // 11. noun + common noun suffix  一日 + <中>
   if (prev.pos === '名詞' && NOUN_SUFFIXES.includes(surfaceForm))
