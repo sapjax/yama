@@ -61,17 +61,20 @@ function FullscreenManager({ styleText, children }: FullscreenManagerProps) {
 
 // =========== App Mounting ===========
 
-const host = document.createElement('yama-root')
-host.id = 'yama-root'
-document.body.appendChild(host)
+let host = document.getElementById('yama-root')
+if (!host) {
+  host = document.createElement('yama-root')
+  host.id = 'yama-root'
+  document.body.appendChild(host)
 
-const shadow = createStyledShadowRoot(host, styleText)
+  const shadow = createStyledShadowRoot(host, styleText)
 
-const appContainer = document.createElement('div')
-shadow.appendChild(appContainer)
+  const appContainer = document.createElement('div')
+  shadow.appendChild(appContainer)
 
-createRoot(appContainer).render(
-  <FullscreenManager styleText={styleText}>
-    <App />
-  </FullscreenManager>,
-)
+  createRoot(appContainer).render(
+    <FullscreenManager styleText={styleText}>
+      <App />
+    </FullscreenManager>,
+  )
+}
