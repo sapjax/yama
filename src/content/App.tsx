@@ -8,7 +8,7 @@ import { initTheme } from '@/lib/theme'
 import { AppSettings, getSettings } from '@/lib/settings'
 import { DictName } from '@/lib/core/dict'
 import { Messages } from '@/lib/message'
-import { listenColorSchemeChange } from '@/lib/utils'
+import { cn, listenColorSchemeChange } from '@/lib/utils'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import Dict from './components/Dict'
 import Toolbar from './components/Toolbar'
@@ -24,6 +24,7 @@ function App() {
   const highlightRef = useRef<Highlighter>(null)
   const styleContainerRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+  const anchorRef = useRef<HTMLDivElement>(null)
 
   // Draggable and Pinnable state
   const [isPinned, setIsPinned] = useState(false)
@@ -156,10 +157,19 @@ function App() {
         getBoundingClientRect: () => rect,
       })
     }
+    if (!isPinned && anchorRef.current) {
+      // Position the anchor element based on the word's rect, including scroll offsets
+      Object.assign(anchorRef.current.style, {
+        left: `${rect.left + window.scrollX}px`,
+        top: `${rect.top + window.scrollY}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`,
+      })
+    }
   })
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const updateWordDebounce = useDebouncedCallback(updateWord, 200)
+  const updateWordDebounce = useDebouncedCallback(updateWord, 150)
 
   const onMouseMove = useEffectEvent(async (e: MouseEvent) => {
     if (isDragging.current) return
@@ -171,22 +181,19 @@ function App() {
     const { range, rect } = highlighter.getRangeAtPoint(e) ?? {}
 
     if (range && rect) {
-      const segment = highlighter.getSegmentByRange(range)
-      if (segment) {
-        if (isOpen) {
-          updateWordDebounce(segment, range, rect)
-          hideDelay.cancel()
-          showDelay()
-        } else {
-          updateWord(segment, range, rect)
-          hideDelay.cancel()
-          showDelay()
-        }
+      // If the word is different, debounce the update.
+      // If it's the same, we still call cancel to clear any pending hide timers.
+      if (range !== curRange) {
+        const segment = highlighter.getSegmentByRange(range)
+        segment && updateWordDebounce(segment, range, rect)
       }
+      hideDelay.cancel()
+      showDelay()
     } else {
       if (!isPinned) {
         refs.setPositionReference(null)
       }
+      updateWordDebounce.cancel()
       showDelay.cancel()
       hideDelay()
     }
@@ -334,23 +341,34 @@ function App() {
       top: 0,
       left: 0,
       transform: `translate(${position.x}px, ${position.y}px)`,
+      transition: 'none',
     }
     : floatingStyles
 
   return (
     <>
       <div ref={styleContainerRef}></div>
+      {/* This is the anchor for the popover */}
       <div
+        id="yama-anchor"
+        ref={anchorRef}
+        inert
+        className={cn(
+          'pointer-events-none absolute bg-foreground/10 dark:bg-foreground/30  z-1000000000  transition-all will-change-auto mix-blend-color-burn',
+          !isOpen && 'bg-transparent!',
+        )}
+      />
+      <div
+        id="yama-popover"
         className="isolate z-1000000000 w-96 rounded-lg border-2 border-border bg-muted text-card-foreground shadow-xl select-text selection:bg-primary selection:text-primary-foreground"
         ref={(node) => {
           refs.setFloating(node)
           panelRef.current = node
         }}
+        data-popover-open={isOpen}
         inert={!isOpen}
         style={{
           ...floatingPositionStyle,
-          ...(!isPinned && transitionStyles),
-          opacity: isOpen ? 1 : 0,
         }}
         {...floatingProps}
         onMouseEnter={onPanelMouseEnter}

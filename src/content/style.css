@@ -33,9 +33,25 @@
   animation-play-state: running;
 }
 
-
 @keyframes rotate {
   to {
     --angle: 1turn;
+  }
+}
+
+#yama-popover {
+  opacity: 0;
+  transition:
+    opacity 300ms,
+    display 300ms allow-discrete,
+    overlay 300ms allow-discrete;
+  will-change: opacity, transform, display, overlay;
+
+  &[data-popover-open="true"] {
+    opacity: 1;
+
+    @starting-style {
+      opacity: 0;
+    }
   }
 }
