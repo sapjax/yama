@@ -89,13 +89,13 @@ export const defaultSettings: AppSettings = {
       apiKey: '',
       endpoint: 'https://api.openai.com/v1/chat/completions',
       model: '',
-      prompt: 'explain the grammar of this sentence:『 ${context}』and the word:『 ${word}』, response with English, keep simple.',
+      prompt: 'explain the word:「 ${word}」and the context sentence:「${context}」, response with English, keep simple,  Pay attention to the beautiful and readable typesetting. Make proper use of emoji.',
     },
     gemini: {
       apiKey: '',
       endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
       model: 'gemini-2.5-flash-lite',
-      prompt: 'explain the grammar of this sentence:『 ${context}』and the word:『 ${word}』, response with English, keep simple',
+      prompt: 'explain the word:「${word}」and the context sentence:「${context}」, response with English, keep simple,  Pay attention to the beautiful and readable typesetting. Make proper use of emoji.',
     },
   },
   shortcuts: {
