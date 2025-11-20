@@ -22,7 +22,7 @@ declare module 'webext-bridge' {
     // AI streaming
     [Messages.ai_explain_stream_start]: { sentence: string, word: string }
     [Messages.ai_explain_stream_chunk]: { chunk: string }
-    [Messages.ai_explain_stream_end]: {}
+    [Messages.ai_explain_stream_end]: { error?: string }
     [Messages.ai_explain_stream_cancel]: {}
 
     // Statistics

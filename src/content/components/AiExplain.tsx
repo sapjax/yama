@@ -44,9 +44,12 @@ export function AiExplain({ word, range, ref, panelRef }: Props) {
     const chunkSub = onMessage(Messages.ai_explain_stream_chunk, ({ data }) => {
       setExplanation(prev => prev + data.chunk)
     })
-    const endSub = onMessage(Messages.ai_explain_stream_end, () => {
+    const endSub = onMessage(Messages.ai_explain_stream_end, ({ data }) => {
       setLoading(false)
       panelRef.current?.classList.remove('ai-loading')
+      if (data.error) {
+        setExplanation(`**Error**: ${data.error}`)
+      }
     })
 
     return () => {

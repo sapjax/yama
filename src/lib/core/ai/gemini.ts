@@ -49,7 +49,16 @@ export class GeminiService implements AiService {
     })
 
     if (!response.ok) {
-      throw new Error(`AI API request failed with status ${response.status}`)
+      let errorMessage = `AI API request failed with status ${response.status}`
+      try {
+        const errorBody = await response.json()
+        if (errorBody.error?.message) {
+          errorMessage = errorBody.error.message
+        }
+      } catch (e) {
+        // ignore json parse error
+      }
+      throw new Error(errorMessage)
     }
 
     const reader = response.body?.getReader()

@@ -197,9 +197,12 @@ onMessage(Messages.ai_explain_stream_start, async ({ data, sender }) => {
   } catch (e: any) {
     if (e.name !== 'AbortError') {
       console.error(e)
+      sendMessage(Messages.ai_explain_stream_end, { error: e.message }, { tabId, frameId: sender.frameId, context: 'content-script' })
     }
   } finally {
-    sendMessage(Messages.ai_explain_stream_end, {}, { tabId, frameId: sender.frameId, context: 'content-script' })
+    if (!currentAiStreamController?.signal.aborted) {
+      sendMessage(Messages.ai_explain_stream_end, {}, { tabId, frameId: sender.frameId, context: 'content-script' })
+    }
     currentAiStreamController = null
   }
 })
