@@ -29,7 +29,7 @@ export type DictSettings = DictSettingItem[]
 
 const defaultDictSettings: DictSettings = [
   { id: 'jpdb', enabled: true },
-  { id: 'kuma', enabled: false },
+  { id: 'kuma', enabled: true },
 ]
 
 export interface AppSettings {
@@ -68,6 +68,9 @@ export interface AppSettings {
   }
   segmenter: {
     linderaMergeTokens: boolean
+  }
+  misc: {
+    panelWidth: number
   }
 }
 
@@ -108,6 +111,9 @@ export const defaultSettings: AppSettings = {
   segmenter: {
     linderaMergeTokens: true,
   },
+  misc: {
+    panelWidth: 384,
+  },
 }
 
 let settingsCache: AppSettings | null = null
@@ -147,6 +153,7 @@ const _getAndCacheSettings = async (): Promise<AppSettings> => {
       reviewColors: { ...defaultSettings.reviewColors, ...savedSettings?.reviewColors },
       dicts: finalDicts,
       segmenter: { ...defaultSettings.segmenter, ...savedSettings?.segmenter },
+      misc: { ...defaultSettings.misc, ...savedSettings?.misc },
     }
   } catch (error) {
     console.error('Error getting settings:', error)
@@ -174,6 +181,7 @@ export const updateSettings = async (newSettings: Partial<AppSettings>): Promise
       colors: { ...currentSettings.colors, ...(newSettings.colors || {}) },
       dicts: newSettings.dicts || currentSettings.dicts,
       segmenter: { ...currentSettings.segmenter, ...(newSettings.segmenter || {}) },
+      misc: { ...currentSettings.misc, ...(newSettings.misc || {}) },
     }
 
     //  ensure that only valid dictionaries are ever written to storage.

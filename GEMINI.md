@@ -24,7 +24,12 @@ The workflow revolves around two key directories (`specs/` and `changes/`) and a
 2.  **Propose (`changes/`)**: All new features or modifications start as a **Change Proposal** in the `changes/` directory. A proposal consists of:
     - `proposal.md`: Explaining the "why" and "what" of the change.
     - `tasks.md`: A checklist for implementation.
-    - `spec.md` (deltas): Precise additions, modifications, or removals to the base specifications.
+    - `proposal.md`: Explaining the "why" and "what" of the change.
+    - `tasks.md`: A checklist for implementation.
+    - `specs/`: Directory containing spec deltas.
+        - Must mirror the structure of the main `specs/` directory (e.g., `specs/settings/spec.md`).
+        - Spec files must use delta headers: `## ADDED Requirements`, `## MODIFIED Requirements`, `## REMOVED Requirements`, `## RENAMED Requirements`.
+        - Each requirement must include at least one `#### Scenario:` block.
 
 3.  **Validate & Implement**: A command-line tool (`openspec`) validates the proposal's structure. Once a human approves the proposal, the intent is locked. The AI (or human) then implements the code precisely according to the approved tasks and spec changes.
 

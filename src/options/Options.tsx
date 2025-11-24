@@ -6,6 +6,7 @@ import { JpdbSettings } from './components/JpdbSettings'
 import { ShortcutSettings } from './components/ShortcutSettings'
 import { ThemeSettings } from './components/ThemeSettings'
 import { SegmenterSettings } from './components/SegmenterSettings'
+import { MiscSettings } from './components/MiscSettings'
 import { cn } from '@/lib/utils'
 
 const tabs = {
@@ -37,7 +38,10 @@ const tabs = {
     label: 'Theme',
     component: <ThemeSettings />,
   },
-
+  misc: {
+    label: 'Misc',
+    component: <MiscSettings />,
+  },
 }
 
 type TabName = keyof typeof tabs
@@ -79,7 +83,7 @@ export function Options() {
                 cn(
                   'p-4 ml-4 rounded-l-lg',
                   activeTab === tabName
-                    ? 'border border-sidebar-ring bg-background text-foreground -mr-[1px]'
+                    ? 'border border-sidebar-ring bg-background text-foreground -mr-px'
                     : 'hover:bg-accent hover:text-accent-foreground',
                   'border-r-0',
                 )

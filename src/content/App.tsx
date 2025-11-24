@@ -322,7 +322,7 @@ function App() {
 
     if (matched) {
       e.preventDefault()
-      e.stopPropagation()
+      e.stopImmediatePropagation()
     }
   })
 
@@ -360,7 +360,7 @@ function App() {
       />
       <div
         id="yama-popover"
-        className="isolate z-1000000000 w-96 rounded-lg border-2 border-border bg-muted text-card-foreground shadow-xl select-text selection:bg-primary selection:text-primary-foreground"
+        className="isolate z-1000000000 rounded-lg border-2 border-border bg-muted text-card-foreground shadow-xl select-text selection:bg-primary selection:text-primary-foreground"
         ref={(node) => {
           refs.setFloating(node)
           panelRef.current = node
@@ -369,6 +369,8 @@ function App() {
         inert={!isOpen}
         style={{
           ...floatingPositionStyle,
+          width: settings?.misc?.panelWidth ?? 384,
+          maxWidth: '90vw',
         }}
         {...floatingProps}
         onMouseEnter={onPanelMouseEnter}
