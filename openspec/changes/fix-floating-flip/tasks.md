@@ -1,0 +1,6 @@
+- [x] Refactor `App.tsx` to use `useHover` from `@floating-ui/react` <!-- id: 0 -->
+- [x] Update `useFloating` to use `anchorRef` as the reference element via `refs.setReference` <!-- id: 1 -->
+- [x] Remove manual `onMouseEnter`/`onMouseLeave` handlers from the panel element <!-- id: 2 -->
+- [x] Remove manual `hideDelay` and `showDelay` logic related to panel interaction <!-- id: 3 -->
+- [x] Configure `useHover` with `safePolygon` and appropriate delays (200ms open, 500ms close) <!-- id: 4 -->
+- [x] Verify that the panel remains open when flipping occurs while hovering the reference word <!-- id: 5 -->
