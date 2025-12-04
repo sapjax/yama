@@ -1,7 +1,7 @@
 {
   "name": "yama",
   "type": "module",
-  "version": "1.0.6",
+  "version": "1.0.5",
   "private": true,
   "scripts": {
     "dev": "vite",

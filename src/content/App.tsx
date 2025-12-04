@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback, useEffectEvent } from 'react'
 import { useDebounce, useDebouncedCallback } from 'use-debounce'
-import { FloatingArrow, arrow, flip, hide, offset, shift, size, useFloating, useDismiss, useInteractions, useTransitionStyles, useHover, safePolygon } from '@floating-ui/react'
+import { FloatingArrow, arrow, flip, hide, offset, shift, size, useFloating, useDismiss, useInteractions, useTransitionStyles } from '@floating-ui/react'
 import { sendMessage } from 'webext-bridge/content-script'
 import { Pin } from 'lucide-react'
 import { Highlighter, injectColors, initHighlighter } from '@/lib/highlight'
@@ -62,6 +62,53 @@ function App() {
   const mousePointerRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 })
   const arrowRef = useRef<SVGSVGElement>(null)
 
+  const { refs, floatingStyles, context } = useFloating({
+    placement: 'bottom',
+    strategy: 'fixed',
+    open: isOpen,
+    transform: true,
+    onOpenChange: setIsOpen,
+    middleware: [
+      offset(9),
+      flip(),
+      size({
+        apply({ availableHeight, elements }) {
+          // reduce 100px to leave some space for the toolbar and 10px for margin
+          const value = `${Math.max(0, availableHeight - 100 - 10)}px`
+          elements.floating.style.setProperty(
+            '--available-height',
+            value,
+          )
+        },
+      }),
+      shift({ padding: 5 }),
+      arrow({ element: arrowRef.current! }),
+      hide(),
+    ],
+  })
+
+  const { styles: transitionStyles } = useTransitionStyles(context)
+
+  const dismiss = useDismiss(context, {
+    enabled: !isPinned,
+  })
+  const { getFloatingProps } = useInteractions([
+    dismiss,
+  ])
+
+  // Re-calculate position when the panel size changes
+  useEffect(() => {
+    if (panelRef.current) {
+      const observer = new ResizeObserver(() => {
+        if (!isManuallyPositioned) { // Use combined state
+          context.update()
+        }
+      })
+      observer.observe(panelRef.current)
+      return () => observer.disconnect()
+    }
+  }, [panelRef, context, isManuallyPositioned])
+
   // handle stay events
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const stayEnoughDebounce = useDebouncedCallback(useEffectEvent(() => {
@@ -93,48 +140,11 @@ function App() {
     setIsOpen(true)
   }), 200)
 
-  const { refs, floatingStyles, context } = useFloating({
-    placement: 'bottom',
-    strategy: 'fixed',
-    open: isOpen,
-    transform: true,
-    onOpenChange: (open, event, reason) => {
-      if (!open) {
-        // When closing, check if we are still hovering the word
-        // This handles the "Flip" case where the panel moves away but the mouse stays on the word
-        const { x, y } = mousePointerRef.current
-        const { range } = highlightRef.current?.getRangeAtPoint({ clientX: x, clientY: y } as MouseEvent) ?? {}
-        if (range && range === curRange) {
-          return
-        }
-      }
-      setIsOpen(open)
-    },
-    middleware: [
-      offset(9),
-      flip(),
-      size({
-        apply({ availableHeight, elements }) {
-          // reduce 100px to leave some space for the toolbar and 10px for margin
-          const value = `${Math.max(0, availableHeight - 100 - 10)}px`
-          elements.floating.style.setProperty(
-            '--available-height',
-            value,
-          )
-        },
-      }),
-      shift({ padding: 5 }),
-      arrow({ element: arrowRef.current! }),
-      hide(),
-    ],
-  })
-
-  const { styles: transitionStyles } = useTransitionStyles(context)
-
   const onPanelMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isDragging.current) return
     e.preventDefault()
     e.stopPropagation()
+    hideDelay.cancel()
   }
 
   const updateWord = useEffectEvent((segment: SegmentedToken, range: Range, rect: DOMRect) => {
@@ -143,7 +153,9 @@ function App() {
     setCurWord(segment.baseForm)
     setCurRange(range)
     if (!isPinned) {
-      refs.setReference(anchorRef.current)
+      refs.setPositionReference({
+        getBoundingClientRect: () => rect,
+      })
     }
     if (!isPinned && anchorRef.current) {
       // Position the anchor element based on the word's rect, including scroll offsets
@@ -158,39 +170,6 @@ function App() {
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const updateWordDebounce = useDebouncedCallback(updateWord, 150)
-
-  const onPanelMouseEnter = useCallback(() => {
-    updateWordDebounce.cancel()
-    hideDelay.cancel()
-  }, [updateWordDebounce, hideDelay])
-
-  const dismiss = useDismiss(context, {
-    enabled: !isPinned,
-  })
-
-  const hover = useHover(context, {
-    delay: { open: 200, close: 500 },
-    handleClose: safePolygon(),
-    enabled: !isPinned,
-  })
-
-  const { getFloatingProps, getReferenceProps } = useInteractions([
-    dismiss,
-    hover,
-  ])
-
-  // Re-calculate position when the panel size changes
-  useEffect(() => {
-    if (panelRef.current) {
-      const observer = new ResizeObserver(() => {
-        if (!isManuallyPositioned) { // Use combined state
-          context.update()
-        }
-      })
-      observer.observe(panelRef.current)
-      return () => observer.disconnect()
-    }
-  }, [panelRef, context, isManuallyPositioned])
 
   const onMouseMove = useEffectEvent(async (e: MouseEvent) => {
     if (isDragging.current) return
@@ -219,6 +198,13 @@ function App() {
       hideDelay()
     }
   })
+
+  const onPanelMouseEnter = useCallback(() => {
+    hideDelay.cancel()
+    updateWordDebounce.cancel()
+  }, [hideDelay, updateWordDebounce])
+
+  const onPanelMouseLeave = hideDelay
 
   useEffect(() => {
     document.addEventListener('mousemove', onMouseMove)
@@ -347,11 +333,7 @@ function App() {
     }
   }, [])
 
-  const floatingProps = isManuallyPositioned
-    ? {}
-    : getFloatingProps({
-      onMouseEnter: onPanelMouseEnter,
-    })
+  const floatingProps = isManuallyPositioned ? {} : getFloatingProps()
 
   const floatingPositionStyle = isManuallyPositioned
     ? {
@@ -372,10 +354,9 @@ function App() {
         ref={anchorRef}
         inert
         className={cn(
-          'pointer-events-none absolute bg-foreground/10 dark:bg-foreground/30 z-1000000000 will-change-auto mix-blend-color-burn',
+          'pointer-events-none absolute bg-foreground/10 dark:bg-foreground/30  z-1000000000  transition-all will-change-auto mix-blend-color-burn',
           !isOpen && 'bg-transparent!',
         )}
-        {...getReferenceProps()}
       />
       <div
         id="yama-popover"
@@ -392,6 +373,8 @@ function App() {
           maxWidth: '90vw',
         }}
         {...floatingProps}
+        onMouseEnter={onPanelMouseEnter}
+        onMouseLeave={onPanelMouseLeave}
         onMouseMove={onPanelMouseMove}
       >
         {!isManuallyPositioned && (
