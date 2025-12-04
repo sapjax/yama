@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback, useEffectEvent } from 'react'
 import { useDebounce, useDebouncedCallback } from 'use-debounce'
-import { FloatingArrow, arrow, flip, hide, offset, shift, size, useFloating, useDismiss, useInteractions, useTransitionStyles } from '@floating-ui/react'
+import { FloatingArrow, arrow, flip, hide, offset, shift, size, useFloating, useDismiss, useInteractions } from '@floating-ui/react'
 import { sendMessage } from 'webext-bridge/content-script'
 import { Pin } from 'lucide-react'
 import { Highlighter, injectColors, initHighlighter } from '@/lib/highlight'
@@ -19,7 +19,7 @@ function App() {
   const [curWord, setCurWord] = useState('')
   const [curRange, setCurRange] = useState<Range | null>(null)
   const [settings, setSettings] = useState<AppSettings>()
-  const [deferredWord] = useDebounce(curWord, 300, { leading: true, trailing: true })
+  const [deferredWord] = useDebounce(curWord, 150, { leading: true, trailing: true })
   const dictNames = settings?.dicts.filter(d => d.enabled).map(d => d.id as DictName) ?? []
   const highlightRef = useRef<Highlighter>(null)
   const styleContainerRef = useRef<HTMLDivElement>(null)
@@ -64,7 +64,7 @@ function App() {
 
   const { refs, floatingStyles, context } = useFloating({
     placement: 'bottom',
-    strategy: 'fixed',
+    strategy: 'absolute',
     open: isOpen,
     transform: true,
     onOpenChange: setIsOpen,
@@ -73,8 +73,8 @@ function App() {
       flip(),
       size({
         apply({ availableHeight, elements }) {
-          // reduce 100px to leave some space for the toolbar and 10px for margin
-          const value = `${Math.max(0, availableHeight - 100 - 10)}px`
+          // reduce 100px to leave some space for the toolbar and 20px for margin
+          const value = `${Math.max(0, availableHeight - 100 - 20)}px`
           elements.floating.style.setProperty(
             '--available-height',
             value,
@@ -86,8 +86,6 @@ function App() {
       hide(),
     ],
   })
-
-  const { styles: transitionStyles } = useTransitionStyles(context)
 
   const dismiss = useDismiss(context, {
     enabled: !isPinned,
@@ -199,12 +197,21 @@ function App() {
     }
   })
 
-  const onPanelMouseEnter = useCallback(() => {
+  const panelEnterPosRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 })
+
+  const onPanelMouseEnter = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    panelEnterPosRef.current = { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY }
     hideDelay.cancel()
     updateWordDebounce.cancel()
   }, [hideDelay, updateWordDebounce])
 
-  const onPanelMouseLeave = hideDelay
+  const onPanelMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (
+      panelEnterPosRef.current.x !== e.nativeEvent.clientX
+      && panelEnterPosRef.current.y !== e.nativeEvent.clientY) {
+      hideDelay()
+    }
+  }
 
   useEffect(() => {
     document.addEventListener('mousemove', onMouseMove)
@@ -426,6 +433,7 @@ function App() {
           className="scrollbar-thin relative overflow-y-auto overscroll-contain p-3 pr-1"
           style={{
             maxHeight: 'min(400px, var(--available-height))',
+            minHeight: '150px',
           }}
           ref={containerRef}
         >
