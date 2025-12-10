@@ -322,7 +322,11 @@ function App() {
         break
       case shortcuts.pronounce:
         const audioButton = containerRef.current?.querySelector('[data-pronounce]') as HTMLElement
-        audioButton?.click()
+        if (audioButton && audioButton.dataset.spelling === curWord) {
+          audioButton.click()
+        } else {
+          sendMessage(Messages.playAudio, { text: curWord }, 'background')
+        }
         matched = true
         break
     }

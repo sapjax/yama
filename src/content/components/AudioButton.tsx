@@ -68,6 +68,7 @@ export function AudioButton({ spelling, audioUrls }: { spelling: string, audioUr
       onClick={handleClick}
       className="relative mt-1 px-2 text-muted-foreground hover:text-primary"
       data-audios={audioUrls}
+      data-spelling={spelling}
     >
       {audioState === 'loading' && (
         <Volume size={14} className="animate-pulse" />
