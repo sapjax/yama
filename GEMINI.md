@@ -1,36 +1,87 @@
-# Gemini Onboarding Instructions
+# Project: yama (山)
 
-Before performing any task, you **must** read the following documents in order to gain a comprehensive understanding of the project and your role. This is non-negotiable.
+## 1. Purpose
 
-1.  **`AGENTS.md`**: Located in the root directory. It contains general instructions and rules for all AI agents working on this project.
-2.  **`openspec/project.md`**: Contains the detailed project overview, architecture, tech stack, and features.
+Yama (山) is a browser extension designed to help Japanese learners read web content more immersively and effectively. It transforms any webpage into a dynamic study tool by providing instant dictionary lookups, word tracking, AI-powered explanations, and optional integration with services like JPDB.io.
 
----
+It aims to be a free, open-source, and highly customizable alternative to other language-learning browser tools.
 
-## My Understanding of OpenSpec
+## 2. Core Features
 
-This section documents my understanding of the OpenSpec methodology as it applies to this project.
+-   **Instant Dictionary Lookup**: Hover over any Japanese word to see its definition and reading from multiple dictionary sources (currently supports JPDB and Kuma).
+-   **Word Status Tracking**: Mark words as `Tracking`, `Ignored`, or `Never Forget`. The extension highlights words with customizable colors based on their status, giving a clear visual indication of vocabulary knowledge.
+-   **Text Segmentation**: Utilizes multiple tokenizers (`Lindera`, browser-native) to accurately segment Japanese sentences into words.
+-   **AI Sentence Explanation**: Configure a custom AI endpoint (compatible with OpenAI and Gemini APIs) to get AI-powered explanations for selected sentences.
+-   **Audio Pronunciation**: Play audio for Japanese words and sentences using the browser's built-in Text-to-Speech (TTS) engine.
+-   **JPDB.io Integration**: Automatically synchronize word statuses with a JPDB.io account, allowing users to create flashcards from words encountered while browsing.
+-   **On-Page Statistics**: The popup menu displays a distribution chart of word statuses on the current page, providing a quick glance at the content's vocabulary difficulty.
+-   **Highly Customizable**:
+    -   **UI Themes**: Choose from several pre-built themes (e.g., `Default`, `Claude`, `Pastel Dreams`) or create a custom one.
+    -   **Highlight Colors**: Full control over the colors used for different word statuses.
+    -   **Component Behavior**: Adjust dictionary sources, AI providers, segmentation methods, and more.
+    -   **Keyboard Shortcuts**: Configure shortcuts for common actions.
 
-### 1. Purpose (The "Why")
+## 3. Architecture & Design
 
-OpenSpec is a framework for **spec-driven development** designed specifically for AI collaboration. Its primary purpose is to **align human intent with AI actions before code is written**. By establishing a formal process for defining and approving changes, it makes AI contributions predictable, verifiable, and truly collaborative, treating the AI as a team member that operates on clear requirements.
+Yama uses a robust, decoupled, message-passing architecture to separate concerns and maintain a clean, scalable structure.
 
-### 2. Workflow (The "How")
+### 3.1. Architectural Model
 
-The workflow revolves around two key directories (`specs/` and `changes/`) and a clear, four-stage process:
+The extension operates on a **client-server model**:
 
-1.  **Define (`specs/`)**: The `specs/` directory is the **single source of truth**. It contains version-controlled Markdown files that describe the current, as-built state of the project's capabilities.
+-   **`background` script (The "Server")**: A long-running service worker that acts as the core of the extension. It owns and manages all state and business logic, including text segmentation, dictionary lookups, AI calls, and settings management. It is the single source of truth.
+-   **`content` script (The "Client")**: A lightweight script injected into web pages. Its primary responsibility is to interact with the DOM (finding text nodes, rendering highlights) and relay user actions to the background script. It contains no business logic.
+-   **Communication**: The content and background scripts communicate exclusively through asynchronous messages, facilitated by the `webext-bridge` library. This ensures loose coupling between the presentation layer and the logic layer.
 
-2.  **Propose (`changes/`)**: All new features or modifications start as a **Change Proposal** in the `changes/` directory. A proposal consists of:
-    - `proposal.md`: Explaining the "why" and "what" of the change.
-    - `tasks.md`: A checklist for implementation.
-    - `proposal.md`: Explaining the "why" and "what" of the change.
-    - `tasks.md`: A checklist for implementation.
-    - `specs/`: Directory containing spec deltas.
-        - Must mirror the structure of the main `specs/` directory (e.g., `specs/settings/spec.md`).
-        - Spec files must use delta headers: `## ADDED Requirements`, `## MODIFIED Requirements`, `## REMOVED Requirements`, `## RENAMED Requirements`.
-        - Each requirement must include at least one `#### Scenario:` block.
+### 3.2. Dependency Management
 
-3.  **Validate & Implement**: A command-line tool (`openspec`) validates the proposal's structure. Once a human approves the proposal, the intent is locked. The AI (or human) then implements the code precisely according to the approved tasks and spec changes.
+The background script uses a **Service Container** (`src/lib/services.ts`) to instantiate, configure, and manage the lifecycle of its core services (e.g., `Segmenter`, `Dictionary`, `AiProxy`). The main background script (`src/background/index.ts`) simply imports these pre-configured service instances and focuses on routing messages, adhering to the **Dependency Inversion** and **Single Responsibility Principles**.
 
-4.  **Archive**: After implementation and deployment, the change proposal is "archived". The deltas from the proposal are merged into the main `specs/`, updating the project's source of truth to reflect the new reality.
+### 3.3. Core Design Principles
+
+-   **SOLID**: The five core principles of object-oriented design are followed to create a modular and maintainable system.
+-   **Single Source of Truth (SSoT)**: All application state is managed by the background script to ensure data consistency.
+-   **Modularity & High Cohesion**: The system is composed of independent modules (e.g., `dict`, `segment`, `ai`) with clearly defined responsibilities.
+-   **Loose Coupling**: Changes in one module have minimal impact on others, primarily achieved through message passing and service interfaces.
+-   **Programming to Interfaces**: Core services depend on abstract interfaces (`IDict`, `ISegmenter`) rather than concrete implementations, allowing for easy extension and testing.
+
+## 4. Project Structure
+
+The project is a standard Vite-based web extension, structured around several key entry points defined in `manifest.config.ts`.
+
+| Component | Entrypoint Path | Description |
+| :--- | :--- | :--- |
+| **Background** | `src/background/index.ts` | The core service worker (server). |
+| **Content** | `src/content/main.tsx` | The script that runs on web pages (client). |
+| **Popup** | `src/popup/index.html` | The UI for the extension's action button. |
+| **Options** | `src/options/index.html` | The main settings page for the extension. |
+| **Offscreen** | `src/offscreen/audio.html` | An offscreen document to handle audio playback for TTS. |
+
+## 5. Tech Stack
+
+| Category | Technology / Library |
+| :--- | :--- |
+| **Language** | TypeScript |
+| **Framework** | React 19 (with Compiler) |
+| **Build Tool** | Vite |
+| **Extension Framework** | CRXJS |
+| **Styling** | Tailwind CSS, PostCSS |
+| **UI Components** | Shadcn UI (`radix-ui`), `lucide-react` |
+| **State Management** | `webext-bridge` (for cross-script state) |
+| **Linting & Formatting** | ESLint, `@stylistic/eslint-plugin` |
+| **Testing** | Vitest |
+| **Tokenizer** | `lindera-wasm-ipadic`, `bunkatsu` |
+| **Drag & Drop** | `@dnd-kit` |
+
+## 6. Getting Started
+
+1.  Install dependencies: `bun install`
+2.  Run the development server: `bun run dev`
+3.  Load the `dist` folder as an unpacked extension in a Chromium-based browser.
+
+### Scripts
+
+-   `bun run dev`: Starts the development server with hot-reloading.
+-   `bun run build`: Compiles the extension for production.
+-   `bun run fmt`: Lints and formats the entire codebase.
+-   `bun run test`: Runs the test suite using Vitest.

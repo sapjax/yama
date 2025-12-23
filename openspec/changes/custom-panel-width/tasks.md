@@ -1,4 +1,0 @@
-- [ ] Add `panelWidth` to `AppSettings` in `src/lib/settings.ts` <!-- id: 0 -->
-- [ ] Create `src/options/components/MiscSettings.tsx` with width input <!-- id: 1 -->
-- [ ] Register `MiscSettings` in `src/options/Options.tsx` <!-- id: 2 -->
-- [ ] Update `src/content/App.tsx` to apply `panelWidth` <!-- id: 3 -->
