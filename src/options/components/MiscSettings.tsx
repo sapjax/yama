@@ -1,27 +1,29 @@
 import { useEffect, useState } from 'react'
-import { getSettings, updateSettings } from '@/lib/settings'
+import { AppSettings, getSettings, updateSettings } from '@/lib/settings'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 export function MiscSettings() {
-  const [width, setWidth] = useState<number>(384)
+  const [misc, setMisc] = useState<AppSettings['misc']>({
+    panelWidth: 384,
+    panelShowDelay: 200,
+    panelHideDelay: 250,
+  })
 
   useEffect(() => {
     getSettings().then((settings) => {
-      if (settings.misc?.panelWidth) {
-        setWidth(settings.misc.panelWidth)
+      if (settings.misc) {
+        setMisc(settings.misc)
       }
     })
   }, [])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (key: keyof AppSettings['misc']) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10)
     if (!isNaN(val)) {
-      setWidth(val)
-      updateSettings({ misc: { panelWidth: val } })
-    } else {
-      // Handle empty or invalid input gracefully, maybe just don't update settings yet
-      // or allow empty string in state but don't save
+      const newMisc = { ...misc, [key]: val }
+      setMisc(newMisc)
+      updateSettings({ misc: newMisc })
     }
   }
 
@@ -38,11 +40,34 @@ export function MiscSettings() {
           <Input
             type="number"
             id="panel-width"
-            defaultValue={384}
-            value={width}
-            onChange={handleChange}
+            value={misc.panelWidth}
+            onChange={handleChange('panelWidth')}
             min={200}
             max={1000}
+          />
+        </div>
+
+        <div className="grid w-full max-w-sm items-center gap-4">
+          <Label htmlFor="panel-show-delay">Panel Show Delay (ms)</Label>
+          <Input
+            type="number"
+            id="panel-show-delay"
+            value={misc.panelShowDelay}
+            onChange={handleChange('panelShowDelay')}
+            min={0}
+            max={5000}
+          />
+        </div>
+
+        <div className="grid w-full max-w-sm items-center gap-4">
+          <Label htmlFor="panel-hide-delay">Panel Hide Delay (ms)</Label>
+          <Input
+            type="number"
+            id="panel-hide-delay"
+            value={misc.panelHideDelay}
+            onChange={handleChange('panelHideDelay')}
+            min={0}
+            max={5000}
           />
         </div>
       </div>

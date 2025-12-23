@@ -71,6 +71,8 @@ export interface AppSettings {
   }
   misc: {
     panelWidth: number
+    panelShowDelay: number
+    panelHideDelay: number
   }
 }
 
@@ -113,6 +115,8 @@ export const defaultSettings: AppSettings = {
   },
   misc: {
     panelWidth: 384,
+    panelShowDelay: 200,
+    panelHideDelay: 250,
   },
 }
 

@@ -131,12 +131,12 @@ function App() {
   const hideDelay = useDebouncedCallback(useEffectEvent(() => {
     if (isPinned) return
     setIsOpen(false)
-  }), 500)
+  }), settings?.misc?.panelHideDelay ?? 250)
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const showDelay = useDebouncedCallback(useEffectEvent(() => {
     setIsOpen(true)
-  }), 200)
+  }), settings?.misc?.panelShowDelay ?? 200)
 
   const onPanelMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isDragging.current) return
