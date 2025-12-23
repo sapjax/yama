@@ -41,6 +41,7 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
                 {def.pitchAccents && def.pitchAccents.length > 0
                   ? (
                     <PitchAccents
+                      word={word}
                       spelling={def.spelling}
                       pitchAccents={def.pitchAccents}
                     />
@@ -55,7 +56,7 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
                         </span>
                       )}
                       {
-                        !!def.audioUrls && <AudioButton key={`${def.spelling}_${def.reading}_${index}`} spelling={def.spelling} audioUrls={def.audioUrls} />
+                        !!def.audioUrls && <AudioButton key={`${def.spelling}_${def.reading}_${index}`} spelling={word} audioUrls={def.audioUrls} />
                       }
                     </>
                   )}
@@ -253,7 +254,8 @@ async function lookup(word: string, dictName: DictName) {
   return sendMessage(Messages.lookup, { word, dictName }, 'background')
 }
 
-function PitchAccents({ spelling, pitchAccents }: {
+function PitchAccents({ word, spelling, pitchAccents }: {
+  word: string
   spelling: string
   pitchAccents: {
     audioUrl: string
@@ -276,7 +278,7 @@ function PitchAccents({ spelling, pitchAccents }: {
       } as React.CSSProperties}
     >
       <div dangerouslySetInnerHTML={{ __html: accent.html }}></div>
-      <AudioButton key={`${spelling}_${accent.audioUrl}`} spelling={spelling} audioUrls={[accent.audioUrl]} />
+      <AudioButton key={`${spelling}_${accent.audioUrl}`} spelling={word} audioUrls={[accent.audioUrl]} />
     </div>
   )
 }
