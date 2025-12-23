@@ -14,6 +14,10 @@ class Highlighter {
   private highlightContainerMap = new WeakMap<Node, Set<Range>>()
   private listeners = new Set<() => void>()
 
+  // Optimization sets
+  private processingNodes = new WeakSet<Node>()
+  private visibleElements = new WeakSet<Element>()
+
   private segmentIntersectionObserver: IntersectionObserver
   private paintIntersectionObserver: IntersectionObserver
 
@@ -29,19 +33,24 @@ class Highlighter {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             const node = entry.target
-            this.highlightNode(node)
+            this.highlightNode(node as Element)
             this.segmentIntersectionObserver.unobserve(node)
           }
         }
+      },
+      {
+        rootMargin: '300px', // Proactively segment before entering viewport
       },
     )
     this.paintIntersectionObserver = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          const node = entry.target
+          const node = entry.target as Element
           if (entry.isIntersecting) {
+            this.visibleElements.add(node)
             this.paintNodeRanges(node)
           } else {
+            this.visibleElements.delete(node)
             this.clearNodeRanges(node)
           }
         }
@@ -62,37 +71,56 @@ class Highlighter {
 
   public scheduleNodeHighlight(node: Node) {
     const textNodes = getTextNodes(node)
+    const parentsToObserve = new Set<Element>()
+
     for (const textNode of textNodes) {
-      this.addToSegmentIntersectionObserver(textNode)
+      if (this.processingNodes.has(textNode)) continue
+
+      const pNode = this.getSegmentableParent(textNode)
+      if (pNode) {
+        parentsToObserve.add(pNode)
+      }
     }
+
+    for (const p of parentsToObserve) {
+      this.segmentIntersectionObserver.observe(p)
+    }
+  }
+
+  private getSegmentableParent(node: Node): Element | null {
+    if (!node.parentElement) return null
+    // if ruby tag, expand to ruby's parent element
+    if (node.parentElement.tagName === 'RUBY' && node.parentElement.parentElement) {
+      return node.parentElement.parentElement
+    }
+    return node.parentElement
   }
 
   private addToSegmentIntersectionObserver(node: CharacterData) {
-    if (node.parentElement) {
-      // if ruby tag, expand to ruby's parent element
-      if (node.parentElement.tagName === 'RUBY' && node.parentElement.parentElement) {
-        this.segmentIntersectionObserver.observe(node.parentElement.parentElement)
-      } else {
-        this.segmentIntersectionObserver.observe(node.parentElement)
-      }
+    if (this.processingNodes.has(node)) return
+    const pNode = this.getSegmentableParent(node)
+    if (pNode) {
+      this.segmentIntersectionObserver.observe(pNode)
     }
   }
 
-  private async highlightNode(node: Element) {
-    const promises = []
+  private highlightNode(node: Element) {
+    if (this.processingNodes.has(node)) return
+    this.processingNodes.add(node)
+
+    // Start painting immediately if visible (will paint as ranges are added)
+    this.paintIntersectionObserver.observe(node)
 
     const hasRuby = !![...node.children].find(child => child.tagName === 'RUBY')
     if (hasRuby) {
-      promises.push(this.highlightRubyParentNode(node))
+      this.highlightRubyParentNode(node)
     } else {
       for (const child of node.childNodes) {
         if (child.nodeType === Node.TEXT_NODE) {
-          promises.push(this.highlightTextNode(child as CharacterData))
+          this.highlightTextNode(child as CharacterData)
         }
       }
     }
-    await Promise.allSettled(promises)
-    this.paintIntersectionObserver.observe(node)
   }
 
   private async highlightTextNode(node: CharacterData) {
@@ -222,6 +250,12 @@ class Highlighter {
     let rangesSet = this.highlightContainerMap.get(node) ?? new Set<Range>()
     this.highlightContainerMap.set(node, rangesSet)
     rangesSet.add(range)
+
+    // Streamed painting: if the container is already visible, paint immediately
+    if (node instanceof Element && this.visibleElements.has(node)) {
+      const colorKey = this.getColorKey(this.getSegmentByRange(range)?.baseForm ?? '')
+      this.highlights.get(colorKey)?.add(range)
+    }
   }
 
   private paintNodeRanges(node: Node) {
@@ -275,6 +309,15 @@ class Highlighter {
       mutations.forEach((mutation) => {
         if (mutation.type === 'characterData') {
           if (mutation.target.nodeType === Node.TEXT_NODE) {
+            // Clear old highlights for this node if it changed
+            const pNode = mutation.target.parentElement
+            if (pNode && this.highlightContainerMap.has(pNode)) {
+              this.clearNodeRanges(pNode, true)
+              this.highlightContainerMap.delete(pNode)
+              this.processingNodes.delete(mutation.target)
+              this.processingNodes.delete(pNode)
+            }
+
             if (isTextNodeValid(mutation.target as Text)) {
               this.addToSegmentIntersectionObserver(mutation.target as Text)
             }
