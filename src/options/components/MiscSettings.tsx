@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
 import { AppSettings, getSettings, updateSettings } from '@/lib/settings'
+import { Messages } from '@/lib/message'
+import { sendMessage } from 'webext-bridge/options'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 
 export function MiscSettings() {
   const [misc, setMisc] = useState<AppSettings['misc']>({
     panelWidth: 384,
     panelShowDelay: 200,
     panelHideDelay: 250,
+    showBadgeCount: false,
   })
 
   useEffect(() => {
@@ -24,6 +28,15 @@ export function MiscSettings() {
       const newMisc = { ...misc, [key]: val }
       setMisc(newMisc)
       updateSettings({ misc: newMisc })
+    }
+  }
+
+  const handleToggle = (key: keyof AppSettings['misc']) => (checked: boolean) => {
+    const newMisc = { ...misc, [key]: checked }
+    setMisc(newMisc)
+    updateSettings({ misc: newMisc })
+    if (key === 'showBadgeCount') {
+      sendMessage(Messages.update_badge_count, {})
     }
   }
 
@@ -69,6 +82,15 @@ export function MiscSettings() {
             min={0}
             max={5000}
           />
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="show-badge-count"
+            checked={misc.showBadgeCount}
+            onCheckedChange={handleToggle('showBadgeCount')}
+          />
+          <Label htmlFor="show-badge-count">Show Badge Count</Label>
         </div>
       </div>
     </div>

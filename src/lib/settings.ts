@@ -73,6 +73,7 @@ export interface AppSettings {
     panelWidth: number
     panelShowDelay: number
     panelHideDelay: number
+    showBadgeCount: boolean
   }
 }
 
@@ -117,6 +118,7 @@ export const defaultSettings: AppSettings = {
     panelWidth: 384,
     panelShowDelay: 200,
     panelHideDelay: 250,
+    showBadgeCount: false,
   },
 }
 

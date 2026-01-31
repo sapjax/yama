@@ -1,5 +1,6 @@
 import type { WordStatus } from '@/lib/core/mark'
 import type { ColorScheme } from '@/lib/utils/colorScheme'
+import { getSettings } from '@/lib/settings'
 
 const colors = {
   light: {
@@ -75,7 +76,12 @@ export function setIconBadgeError(message: string) {
   chrome.action.setTitle({ title: '❌' + message })
 }
 
-export function setIconBadgeCounting(counting: Record<WordStatus, number>) {
+export async function setIconBadgeCounting(counting: Record<WordStatus, number>) {
+  const settings = await getSettings()
+  if (!settings.misc.showBadgeCount) {
+    clearIconBadge()
+    return
+  }
   const total = counting.Tracking + counting.Never_Forget
   let badgeText = total > 0 ? String(total) : ''
   if (total >= 10000) {
@@ -84,7 +90,7 @@ export function setIconBadgeCounting(counting: Record<WordStatus, number>) {
   chrome.action.setBadgeText({ text: badgeText })
   chrome.action.setBadgeTextColor({ color: colors[cachedTheme].body })
   chrome.action.setBadgeBackgroundColor({ color: colors[cachedTheme].badge })
-  chrome.action.setTitle({ title: `Tracking: ${counting.Tracking} | Never_Forget: ${counting.Never_Forget}` })
+  chrome.action.setTitle({ title: `Tracking: ${counting.Tracking || 0} | Never_Forget: ${counting.Never_Forget || 0}` })
 }
 
 export function clearIconBadge() {

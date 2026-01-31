@@ -30,6 +30,7 @@ declare module 'webext-bridge' {
 
     // Audio
     [Messages.audio_state_changed]: { audioUrl: string, state: 'loading' | 'playing' | 'idle' }
+    [Messages.update_badge_count]: {}
   }
 }
 
@@ -58,6 +59,7 @@ const enum Messages {
   get_statistics = 'get_statistics',
 
   audio_state_changed = 'audio_state_changed',
+  update_badge_count = 'update_badge_count',
 }
 
 async function sendMessageToAllTabs<T extends Messages>(action: T, data: ProtocolMap[T]) {
