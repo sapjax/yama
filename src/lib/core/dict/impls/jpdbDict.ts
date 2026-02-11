@@ -106,6 +106,17 @@ const parseDocument = async (word: string, html: string) => {
         })
       }
 
+      // kanji composition
+      const kanjiSection = root.querySelector('.subsection-composed-of-kanji')
+      const kanji = kanjiSection
+        ?.querySelector('.subsection')
+        ?.children
+        .map(node => ({
+          char: node.querySelector('.spelling')?.querySelector('a')?.textContent ?? '',
+          meaning: node.querySelector('.description')?.textContent ?? '',
+        }))
+        .filter(k => k.char)
+
       return {
         spelling,
         reading: reading ?? '',
@@ -116,6 +127,7 @@ const parseDocument = async (word: string, html: string) => {
         conjugation,
         pos,
         pitchAccents,
+        kanji,
       }
     } else if (isKanji) {
       const readingListNode = root.querySelector('.kanji-reading-list-common')

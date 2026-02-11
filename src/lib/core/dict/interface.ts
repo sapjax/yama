@@ -11,6 +11,7 @@ export type Definition = {
   altSpellings?: { spelling: string, percent?: string, furigana?: string }[]
   altReadings?: { reading: string, percent?: string }[]
   pitchAccents?: { audioUrl: string, html: string }[]
+  kanji?: { char: string, meaning: string }[]
   pos?: string
   conjugation?: {
     link: string

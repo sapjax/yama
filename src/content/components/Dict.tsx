@@ -160,12 +160,31 @@ function DictEntry({ lookupPromise, dictName, word }: DictProps & {
             {def.altReadings && def.altReadings.length > 0 && (
               <div className="mt-4 text-xs">
                 <table className="mt-1 w-fit border-separate border border-muted-foreground text-center text-xs text-muted-foreground">
-                  <caption className="caption-bottom p-2">Alternative Readings</caption>
+                  <caption className="caption-top p-2">Alternative Readings</caption>
                   <tbody>
                     {def.altReadings.map((s, i) => (
                       <tr key={i}>
                         <td className="border border-muted-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.reading}</td>
                         <td className="border border-muted-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{s.percent}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Kanji Used */}
+            {def.kanji && def.kanji.length > 0 && (
+              <div className="mt-4 text-xs">
+                <table className="mt-1 w-fit border-separate border border-muted-foreground text-center text-xs text-muted-foreground">
+                  <caption className="caption-top p-2">Kanji Used</caption>
+                  <tbody>
+                    {def.kanji.map(k => (
+                      <tr key={k.char}>
+                        <td className="border border-muted-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">
+                          <a href={`https://jpdb.io/kanji/${k.char}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary hover:underline">{k.char}</a>
+                        </td>
+                        <td className="border border-muted-foreground p-2 text-left text-sm whitespace-nowrap text-foreground">{k.meaning}</td>
                       </tr>
                     ))}
                   </tbody>
