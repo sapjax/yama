@@ -77,6 +77,8 @@ export function setIconBadgeError(message: string) {
 }
 
 export async function setIconBadgeCounting(counting: Record<WordStatus, number>) {
+  chrome.action.setTitle({ title: `Tracking: ${counting.Tracking || 0} | Never_Forget: ${counting.Never_Forget || 0}` })
+
   const settings = await getSettings()
   if (!settings.misc.showBadgeCount) {
     clearIconBadge()
@@ -90,7 +92,6 @@ export async function setIconBadgeCounting(counting: Record<WordStatus, number>)
   chrome.action.setBadgeText({ text: badgeText })
   chrome.action.setBadgeTextColor({ color: colors[cachedTheme].body })
   chrome.action.setBadgeBackgroundColor({ color: colors[cachedTheme].badge })
-  chrome.action.setTitle({ title: `Tracking: ${counting.Tracking || 0} | Never_Forget: ${counting.Never_Forget || 0}` })
 }
 
 export function clearIconBadge() {
