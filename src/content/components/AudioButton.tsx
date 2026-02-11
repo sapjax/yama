@@ -9,14 +9,17 @@ const callbacks: Set<(params: MessageData) => void> = new Set()
 let listener: () => void
 
 export function AudioButton({ spelling, audioUrls }: { spelling: string, audioUrls: string[] }) {
-  const [nextAudio, setNextAudio] = useState(audioUrls[0])
+  const [audioIndex, setAudioIndex] = useState(0)
   const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing'>('idle')
   const [isVolume1, setIsVolume1] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval>>(null)
+  const prevAudioUrlsRef = useRef(audioUrls)
 
-  useEffect(() => {
-    setNextAudio(audioUrls[0])
-  }, [audioUrls])
+  // Reset index synchronously when audioUrls changes (new word)
+  if (prevAudioUrlsRef.current !== audioUrls) {
+    prevAudioUrlsRef.current = audioUrls
+    setAudioIndex(0)
+  }
 
   useEffect(() => {
     if (!listener) {
@@ -57,8 +60,9 @@ export function AudioButton({ spelling, audioUrls }: { spelling: string, audioUr
 
   const handleClick = () => {
     if (audioState === 'loading') return
-    sendMessage(Messages.playAudio, { text: spelling, audioUrl: nextAudio }, 'background')
-    setNextAudio(audioUrls[(audioUrls.indexOf(nextAudio) + 1) % audioUrls.length])
+    const currentAudioUrl = audioUrls[audioIndex]
+    sendMessage(Messages.playAudio, { text: spelling, audioUrl: currentAudioUrl }, 'background')
+    setAudioIndex((audioIndex + 1) % audioUrls.length)
   }
 
   return (
