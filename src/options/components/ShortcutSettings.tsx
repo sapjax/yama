@@ -1,10 +1,19 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AppSettings, getSettings, updateSettings } from '@/lib/settings'
 import { useEffect, useState } from 'react'
 
 type ShortcutAction = keyof AppSettings['shortcuts']
+
+const modifierKeyOptions = [
+  { value: 'None', label: 'None' },
+  { value: 'Control', label: 'Ctrl' },
+  { value: 'Alt', label: 'Alt' },
+  { value: 'Meta', label: 'Meta' },
+  { value: 'Shift', label: 'Shift' },
+] as const
 
 export function ShortcutSettings() {
   const [shortcuts, setShortcuts] = useState<AppSettings['shortcuts']>()
@@ -57,6 +66,22 @@ export function ShortcutSettings() {
     <div className="space-y-4">
       <h2 className="text-xl font-bold">Keyboard Shortcuts</h2>
       <div className="space-y-2">
+        <div className="flex items-center gap-4">
+          <Label htmlFor="shortcut-holdModifierKey" className="w-48">Hold to Show Dictionary</Label>
+          <Select
+            value={shortcuts.holdModifierKey}
+            onValueChange={value => handleChange('holdModifierKey', value)}
+          >
+            <SelectTrigger id="shortcut-holdModifierKey" className="w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {modifierKeyOptions.map(opt => (
+                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         {renderShortcutInput('tracking', 'Mark as Tracking')}
         {renderShortcutInput('ignored', 'Mark as Ignored')}
         {renderShortcutInput('never_forget', 'Mark as Never Forget')}

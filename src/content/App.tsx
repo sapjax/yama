@@ -169,6 +169,18 @@ function App() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const updateWordDebounce = useDebouncedCallback(updateWord, 150)
 
+  const isModifierHeld = (e: MouseEvent): boolean => {
+    const modifier = settings?.shortcuts?.holdModifierKey
+    if (!modifier || modifier === 'None') return true
+    switch (modifier) {
+      case 'Control': return e.ctrlKey
+      case 'Alt': return e.altKey
+      case 'Meta': return e.metaKey
+      case 'Shift': return e.shiftKey
+      default: return true
+    }
+  }
+
   const onMouseMove = useEffectEvent(async (e: MouseEvent) => {
     if (isDragging.current) return
 
@@ -178,7 +190,7 @@ function App() {
 
     const { range, rect } = highlighter.getRangeAtPoint(e) ?? {}
 
-    if (range && rect) {
+    if (range && rect && isModifierHeld(e)) {
       // If the word is different, debounce the update.
       // If it's the same, we still call cancel to clear any pending hide timers.
       if (range !== curRange) {

@@ -65,6 +65,7 @@ export interface AppSettings {
     ignored: string
     ai_explain: string
     pronounce: string
+    holdModifierKey: 'None' | 'Control' | 'Alt' | 'Meta' | 'Shift'
   }
   segmenter: {
     linderaMergeTokens: boolean
@@ -110,6 +111,7 @@ export const defaultSettings: AppSettings = {
     ignored: 'a',
     ai_explain: 'w',
     pronounce: 'r',
+    holdModifierKey: 'None',
   },
   segmenter: {
     linderaMergeTokens: true,
